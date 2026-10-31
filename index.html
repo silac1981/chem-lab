@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Chem Lab bilingüe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Cuaderno de laboratorio por misiones: cada tipo de compuesto tiene su color fijo (como en la tabla periódica) en todo el sitio */
+:root{
+  --bg:#F3F5F8; --card:#FFFFFF; --ink:#16181D; --soft:#5B6270; --line:#DDE2EA; --accent:#3D3BD6; --accent-ink:#FFFFFF;
+  --ok:#1E8E4E; --bad:#C7362F; --warn:#B86E00;
+  --t-simple:#6B7280; --t-oxido:#E07A12; --t-hidruro:#0F9C96; --t-hidracido:#7C4DEB; --t-salbin:#2470E0;
+  --t-hidroxido:#24A055; --t-oxoacido:#D93D67; --t-oxosal:#4B44D9; --t-otras:#A8711A;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"Atkinson Hyperlegible",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1116; --card:#181B22; --ink:#ECEFF4; --soft:#A2AAB8; --line:#2A2F3A; --accent:#8C8AFF; --accent-ink:#0F1116;
+  --ok:#4CC584; --bad:#FF6B63; --warn:#F2A93B;
+  --t-simple:#9CA3AF; --t-oxido:#FF9A3D; --t-hidruro:#2CC7C0; --t-hidracido:#A27BFF; --t-salbin:#5A9BFF;
+  --t-hidroxido:#46C97A; --t-oxoacido:#FF6B90; --t-oxosal:#8A84FF; --t-otras:#E0A445; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1116; --card:#181B22; --ink:#ECEFF4; --soft:#A2AAB8; --line:#2A2F3A; --accent:#8C8AFF; --accent-ink:#0F1116;
+  --ok:#4CC584; --bad:#FF6B63; --warn:#F2A93B;
+  --t-simple:#9CA3AF; --t-oxido:#FF9A3D; --t-hidruro:#2CC7C0; --t-hidracido:#A27BFF; --t-salbin:#5A9BFF;
+  --t-hidroxido:#46C97A; --t-oxoacido:#FF6B90; --t-oxosal:#8A84FF; --t-otras:#E0A445; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto;padding-block:20px 60px;display:grid;gap:20px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
+h1{font-size:clamp(1.9rem,5vw,2.8rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.4rem,3.4vw,1.9rem);font-weight:800}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0;max-width:66ch}
+.f{font-family:var(--mono);font-weight:700;letter-spacing:.01em}
+.en{font-style:italic}
+.en::before{content:"EN";font:700 .64rem var(--body);font-style:normal;letter-spacing:.08em;background:var(--ink);color:var(--bg);padding:1px 5px;border-radius:4px;margin-right:6px;vertical-align:2px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* barra superior */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;display:grid;gap:10px;border-bottom:1px solid var(--line)}
+.fila{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.marcador{display:flex;gap:14px;align-items:center;font-weight:700;font-variant-numeric:tabular-nums}
+.nivel{display:grid;gap:4px;min-width:180px}
+.nivel small{color:var(--soft);font-weight:400}
+.barra{height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.barra i{display:block;height:100%;background:var(--accent);width:0;transition:width .5s}
+.racha{padding:4px 10px;border-radius:99px;background:var(--card);border:1px solid var(--line)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);padding:8px 13px;border-radius:10px;cursor:pointer;font-weight:700;font-size:.92rem}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs button .pt{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+.panel{display:grid;gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:10px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+.tipo{border-left:6px solid var(--c,var(--accent))}
+.chip{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.8rem;padding:3px 10px;border-radius:99px;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--ink);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.ojo{background:color-mix(in srgb,var(--warn) 12%,transparent);border-radius:10px;padding:10px 12px;font-size:.95rem}
+.ojo b{color:var(--warn)}
+.ej{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+.ej .f{font-size:1.1rem}
+.dato{color:var(--soft);font-size:.92rem}
+.speak{border:1px solid var(--line);background:transparent;border-radius:8px;padding:2px 8px;cursor:pointer;font-size:.8rem;font-weight:700;margin-left:6px}
+.speak:hover{border-color:var(--accent)}
+
+/* mapa */
+.mapa{display:grid;gap:12px}
+.rama{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:start}
+.rama>h3{padding-top:8px}
+.hojas{display:flex;flex-wrap:wrap;gap:8px}
+.hoja{border:2px solid var(--c);background:var(--card);border-radius:12px;padding:8px 12px;cursor:pointer;text-align:left;display:grid;gap:2px;min-width:0}
+.hoja:hover{background:color-mix(in srgb,var(--c) 10%,var(--card))}
+.hoja b{font-family:var(--display)}
+.hoja span{font-size:.85rem;color:var(--soft)}
+@media (max-width:600px){.rama{grid-template-columns:1fr}}
+
+/* tabla de terminaciones */
+.puente{width:100%;border-collapse:collapse;font-size:1rem}
+.puente th,.puente td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+.puente th{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--soft)}
+.scroll{overflow-x:auto}
+
+/* oxidación */
+.ox-q{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ox-q .f{font-size:1.6rem}
+.ox-q u{text-decoration-thickness:3px;text-underline-offset:4px;text-decoration-color:var(--accent)}
+.ops{display:flex;flex-wrap:wrap;gap:8px}
+.op{border:2px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:700;min-width:56px;font-family:var(--mono)}
+.op:hover{border-color:var(--accent)}
+.op.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.op.mal{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.pasos{font-family:var(--mono);font-size:.95rem;background:var(--bg);border-radius:10px;padding:10px 12px;white-space:pre-wrap}
+
+/* constructor */
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.ctrl label{display:grid;gap:4px;font-size:.82rem;font-weight:700;color:var(--soft)}
+select{font:inherit;font-size:1rem;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
+.resultado{display:grid;gap:12px}
+.formula-grande{font-family:var(--mono);font-weight:700;font-size:clamp(2.4rem,9vw,4rem);line-height:1}
+.nombres{display:grid;gap:8px}
+.nombre{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:baseline}
+.nombre small{color:var(--soft);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+@media (max-width:520px){.nombre{grid-template-columns:1fr;gap:0}}
+
+/* 3D */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}
+@media (max-width:820px){.lab{grid-template-columns:1fr}}
+#lienzo{width:100%;height:440px;display:block;border-radius:14px;background:var(--card);border:1px solid var(--line);touch-action:none}
+@media (max-width:820px){#lienzo{height:340px}}
+.mols{display:flex;flex-wrap:wrap;gap:6px}
+.mols button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px;cursor:pointer;font-family:var(--mono);font-weight:700}
+.mols button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.85rem}
+.leyenda span{display:inline-flex;align-items:center;gap:5px}
+.leyenda i{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid var(--line)}
+
+/* tarjetas */
+.flash{perspective:1000px;cursor:pointer;min-height:220px}
+.flash-in{position:relative;width:100%;min-height:220px;transition:transform .5s;transform-style:preserve-3d}
+.flash.vuelta .flash-in{transform:rotateY(180deg)}
+.cara{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;display:grid;place-items:center;text-align:center;padding:20px;border:2px solid var(--line);background:var(--card)}
+.cara.atras{transform:rotateY(180deg);background:color-mix(in srgb,var(--accent) 10%,var(--card));border-color:var(--accent)}
+.cara .t{font-family:var(--display);font-size:clamp(1.6rem,6vw,2.4rem);font-weight:800}
+.acciones{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:11px 18px;border-radius:12px;cursor:pointer}
+.btn.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* desafío */
+.preg{font-size:1.25rem;font-weight:700}
+.prog{display:flex;gap:4px}
+.prog i{flex:1;height:8px;border-radius:99px;background:var(--line)}
+.prog i.ok{background:var(--ok)} .prog i.mal{background:var(--bad)} .prog i.ya{background:var(--accent)}
+.opciones{display:grid;gap:8px}
+.opcion{text-align:left;border:2px solid var(--line);background:var(--card);border-radius:12px;padding:12px 14px;cursor:pointer;font-size:1.05rem}
+.opcion:hover{border-color:var(--accent)}
+.opcion.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.opcion.mal{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.feedback{border-radius:12px;padding:12px 14px;background:var(--bg)}
+
+/* IA */
+.chat{display:grid;gap:10px}
+.chat textarea{font:inherit;width:100%;min-height:80px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);resize:vertical}
+.sug{display:flex;flex-wrap:wrap;gap:8px}
+.sug button{border:1px dashed var(--accent);background:transparent;border-radius:99px;padding:6px 12px;cursor:pointer;font-size:.9rem}
+.respuesta{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:14px;min-height:60px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(30px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:20}
+.toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.lecs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.lec{border:2px solid var(--line);border-radius:14px;background:var(--card);padding:14px;text-align:left;cursor:pointer;display:grid;gap:6px;border-left:8px solid var(--c)}
+.lec:hover{border-color:var(--c)}
+.lec b{font-family:var(--display);font-size:1.15rem}
+.lec small{color:var(--soft)}
+.paso{display:grid;gap:8px;padding:14px 16px;border-radius:14px;background:var(--card);border:1px solid var(--line);animation:entra .35s ease}
+@keyframes entra{from{opacity:.3;transform:translateY(8px)}to{opacity:1;transform:none}}
+.paso .en-t{font-size:1.18rem;line-height:1.5}
+.es-t{color:var(--soft);font-size:.98rem;border-left:3px solid var(--accent);padding-left:10px}
+.paso.q{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--card))}
+.mini{display:flex;gap:6px;flex-wrap:wrap}
+.mini button{border:1px solid var(--line);background:transparent;border-radius:8px;padding:2px 9px;cursor:pointer;font-size:.8rem;font-weight:700}
+.sub-sel{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.88rem}
+.sub-sel button{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:4px 11px;cursor:pointer;font-weight:700;font-size:.85rem}
+.sub-sel button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.hilo{display:grid;gap:12px}
+
+/* paso a paso */
+.mapa-ruta{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.parada{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:16px;padding:12px;cursor:pointer}
+.parada:hover{border-color:var(--c)}
+.parada .num{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:800 1.4rem var(--display);background:var(--c);color:#fff}
+.parada b{display:block;font-family:var(--display);font-size:1.05rem}
+.parada small{display:block;color:var(--soft);font-size:.8rem}
+.parada.hecha{border-color:var(--ok)} .parada.hecha .num{background:var(--ok)}
+.parada.bloq{opacity:.5;cursor:default} .parada.bloq .num{background:var(--line);color:var(--soft)}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--line)} .dots i.ok{background:var(--ok)} .dots i.ya{background:var(--accent);transform:scale(1.3)}
+.vc{background:var(--card);border:1px solid var(--line);border-top:8px solid var(--c);border-radius:18px;padding:18px;display:grid;gap:12px;max-width:720px;margin:0 auto;width:100%}
+.vis{background:var(--bg);border-radius:14px;padding:8px}
+.vt{font-size:clamp(1.35rem,4.5vw,1.8rem);font-weight:800}
+.vx{font-size:1.12rem;line-height:1.5}
+.enbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;background:color-mix(in srgb,var(--accent) 9%,transparent);border-radius:12px;padding:10px 12px}
+.enbar .pill{font:800 .7rem var(--body);letter-spacing:.08em;background:var(--accent);color:var(--accent-ink);padding:2px 8px;border-radius:6px}
+.enbar b{font-size:1.1rem}
+.en-frase{font-style:italic;flex-basis:100%}
+.ops.grande .op{font-size:1.15rem;padding:12px 20px;min-width:90px;font-family:var(--body)}
+.serie-item{font-family:var(--mono);font-weight:700;font-size:clamp(1.8rem,7vw,2.6rem);text-align:center;padding:10px;border-radius:14px;background:var(--bg)}
+@keyframes gira{to{transform:rotate(360deg)}} .gira{animation:gira 10s linear infinite}
+@keyframes vib{0%,100%{transform:translate(0,0)}50%{transform:translate(2px,-3px)}} .vib{animation:vib 1.6s ease-in-out infinite}
+@keyframes jI{0%,25%{transform:translateX(0)}60%,100%{transform:translateX(102px)}} .junta-i{animation:jI 4s ease-in-out infinite alternate}
+@keyframes jD{0%,25%{transform:translateX(0)}60%,100%{transform:translateX(-102px)}} .junta-d{animation:jD 4s ease-in-out infinite alternate}
+@keyframes ap{0%,55%{opacity:0}75%,100%{opacity:1}} .aparece{animation:ap 4s ease-in-out infinite alternate}
+@keyframes br{0%,100%{opacity:.3}50%{opacity:1}} .brilla{animation:br 1.4s infinite}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}} .flota{animation:fl 3s ease-in-out infinite}
+@keyframes vj{0%,20%{transform:translateX(0)}70%,100%{transform:translate(125px,-55px)}} .viaja{animation:vj 3s ease-in-out infinite}
+@keyframes atr{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.85)}} .atrae{animation:atr 1.6s ease-in-out infinite;transform-origin:200px 110px}
+@keyframes bal{0%{transform:rotate(-8deg)}60%,100%{transform:rotate(0)}} .balancea{animation:bal 2.5s ease-out infinite alternate}
+@keyframes dib{from{stroke-dasharray:0 400}to{stroke-dasharray:400 0}} .dibuja{animation:dib 2.5s ease-in-out infinite alternate}
+@media (max-width:600px){.top{position:static}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="fila">
+      <div><h1>Chem Lab <span style="color:var(--accent)">bilingüe</span></h1></div>
+      <div class="marcador">
+        <div class="nivel"><span id="nivelNombre">Nivel 1 · Átomo</span><div class="barra"><i id="nivelBarra"></i></div><small id="xpTxt">0 XP</small></div>
+        <span class="racha" id="racha" title="Respuestas seguidas bien">Racha 0</span>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+  <main id="vista" class="panel"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ================= DATOS QUÍMICOS ================= */
+const T = { // tipos de compuesto: color, nombre ES, nombre EN
+  simple:{c:"--t-simple",es:"Sustancia simple",en:"Element (simple substance)"},
+  oxido:{c:"--t-oxido",es:"Óxido",en:"Oxide"},
+  hidruro:{c:"--t-hidruro",es:"Hidruro metálico",en:"Metal hydride"},
+  hidracido:{c:"--t-hidracido",es:"Hidrácido",en:"Binary acid (hydracid)"},
+  comun:{c:"--t-hidracido",es:"Compuesto de H con nombre común",en:"Hydrogen compound (common name)"},
+  salbin:{c:"--t-salbin",es:"Sal binaria",en:"Binary salt"},
+  hidroxido:{c:"--t-hidroxido",es:"Hidróxido",en:"Hydroxide (base)"},
+  oxoacido:{c:"--t-oxoacido",es:"Oxoácido",en:"Oxoacid (oxyacid)"},
+  oxosal:{c:"--t-oxosal",es:"Oxosal",en:"Oxosalt (oxysalt)"},
+  hidrogenosal:{c:"--t-otras",es:"Hidrogenosal",en:"Hydrogen salt (acid salt)"},
+  amonio:{c:"--t-otras",es:"Sal de amonio",en:"Ammonium salt"}
+};
+const ROM=["","I","II","III","IV","V","VI","VII"];
+const METALES=[
+  {s:"Li",es:"litio",en:"lithium",ox:[1]},{s:"Na",es:"sodio",en:"sodium",ox:[1]},{s:"K",es:"potasio",en:"potassium",ox:[1]},
+  {s:"Ag",es:"plata",en:"silver",ox:[1]},{s:"Mg",es:"magnesio",en:"magnesium",ox:[2]},{s:"Ca",es:"calcio",en:"calcium",ox:[2]},
+  {s:"Ba",es:"bario",en:"barium",ox:[2]},{s:"Zn",es:"zinc",en:"zinc",ox:[2]},{s:"Al",es:"aluminio",en:"aluminum",ox:[3]},
+  {s:"Ga",es:"galio",en:"gallium",ox:[3]},
+  {s:"Cu",es:"cobre",en:"copper",ox:[1,2],tes:["cuproso","cúprico"],ten:["cuprous","cupric"]},
+  {s:"Fe",es:"hierro",en:"iron",ox:[2,3],tes:["ferroso","férrico"],ten:["ferrous","ferric"]},
+  {s:"Pb",es:"plomo",en:"lead",ox:[2,4],tes:["plumboso","plúmbico"],ten:["plumbous","plumbic"]},
+  {s:"Sn",es:"estaño",en:"tin",ox:[2,4],tes:["estannoso","estánnico"],ten:["stannous","stannic"]},
+  {s:"Au",es:"oro",en:"gold",ox:[1,3],tes:["auroso","áurico"],ten:["aurous","auric"]},
+  {s:"Ni",es:"níquel",en:"nickel",ox:[2,3],tes:["niqueloso","niquélico"],ten:["nickelous","nickelic"]},
+  {s:"Co",es:"cobalto",en:"cobalt",ox:[2,3],tes:["cobaltoso","cobáltico"],ten:["cobaltous","cobaltic"]},
+  {s:"Pt",es:"platino",en:"platinum",ox:[2,4],tes:["platinoso","platínico"],ten:["platinous","platinic"]},
+  {s:"Pd",es:"paladio",en:"palladium",ox:[2,4],tes:["paladioso","paládico"],ten:["palladous","palladic"]},
+  {s:"Ti",es:"titanio",en:"titanium",ox:[3,4],tes:["titanoso","titánico"],ten:["titanous","titanic"]}
+];
+const NOMETALES=[
+  {s:"C",es:"carbono",en:"carbon",ox:[2,4]},{s:"Si",es:"silicio",en:"silicon",ox:[4]},
+  {s:"N",es:"nitrógeno",en:"nitrogen",ox:[3,5]},{s:"P",es:"fósforo",en:"phosphorus",ox:[3,5]},
+  {s:"S",es:"azufre",en:"sulfur",ox:[4,6]},{s:"Se",es:"selenio",en:"selenium",ox:[4,6]},
+  {s:"Cl",es:"cloro",en:"chlorine",ox:[1,3,5,7]},{s:"Br",es:"bromo",en:"bromine",ox:[1,3,5,7]},{s:"I",es:"iodo",en:"iodine",ox:[1,3,5,7]}
+];
+// aniones monoatómicos (no metal con su número negativo)
+const ANIONES=[
+  {s:"F",q:1,es:"fluoruro",en:"fluoride"},{s:"Cl",q:1,es:"cloruro",en:"chloride"},{s:"Br",q:1,es:"bromuro",en:"bromide"},
+  {s:"I",q:1,es:"ioduro",en:"iodide"},{s:"S",q:2,es:"sulfuro",en:"sulfide"},{s:"Se",q:2,es:"seleniuro",en:"selenide"},
+  {s:"N",q:3,es:"nitruro",en:"nitride"},{s:"P",q:3,es:"fosfuro",en:"phosphide"},{s:"C",q:4,es:"carburo",en:"carbide"}
+];
+const HIDRACIDOS=[
+  {f:[["H"],["F"]],es:["fluoruro de hidrógeno","ácido fluorhídrico"],en:["hydrogen fluoride","hydrofluoric acid"],x:"F",ox:-1},
+  {f:[["H"],["Cl"]],es:["cloruro de hidrógeno","ácido clorhídrico"],en:["hydrogen chloride","hydrochloric acid"],x:"Cl",ox:-1},
+  {f:[["H"],["Br"]],es:["bromuro de hidrógeno","ácido bromhídrico"],en:["hydrogen bromide","hydrobromic acid"],x:"Br",ox:-1},
+  {f:[["H"],["I"]],es:["ioduro de hidrógeno","ácido iodhídrico"],en:["hydrogen iodide","hydroiodic acid"],x:"I",ox:-1},
+  {f:[["H",2],["S"]],es:["sulfuro de hidrógeno","ácido sulfhídrico"],en:["hydrogen sulfide","hydrosulfuric acid"],x:"S",ox:-2}
+];
+const COMUNES=[
+  {f:[["H",2],["O"]],es:"agua",en:"water",x:"O",ox:-2},{f:[["N"],["H",3]],es:"amoníaco",en:"ammonia",x:"N",ox:-3},
+  {f:[["C"],["H",4]],es:"metano",en:"methane",x:"C",ox:-4},{f:[["P"],["H",3]],es:"fosfina",en:"phosphine",x:"P",ox:-3},
+  {f:[["Si"],["H",4]],es:"silano",en:"silane",x:"Si",ox:-4},{f:[["B"],["H",3]],es:"borano",en:"borane",x:"B",ox:3}
+];
+// oxoácidos: no metal + número -> fórmula (H, X, O), nombres y su oxoanión
+const OXO=[
+  ["C",4,2,3,"carbónico","carbonic","carbonato","carbonate"],["Si",4,2,3,"silícico","silicic","silicato","silicate"],
+  ["N",3,1,2,"nitroso","nitrous","nitrito","nitrite"],["N",5,1,3,"nítrico","nitric","nitrato","nitrate"],
+  ["P",3,3,3,"fosforoso","phosphorous","fosfito","phosphite"],["P",5,3,4,"fosfórico","phosphoric","fosfato","phosphate"],
+  ["S",4,2,3,"sulfuroso","sulfurous","sulfito","sulfite"],["S",6,2,4,"sulfúrico","sulfuric","sulfato","sulfate"],
+  ["Se",4,2,3,"selenioso","selenous","selenito","selenite"],["Se",6,2,4,"selénico","selenic","selenato","selenate"],
+  ["Cl",1,1,1,"hipocloroso","hypochlorous","hipoclorito","hypochlorite"],["Cl",3,1,2,"cloroso","chlorous","clorito","chlorite"],
+  ["Cl",5,1,3,"clórico","chloric","clorato","chlorate"],["Cl",7,1,4,"perclórico","perchloric","perclorato","perchlorate"],
+  ["Br",1,1,1,"hipobromoso","hypobromous","hipobromito","hypobromite"],["Br",3,1,2,"bromoso","bromous","bromito","bromite"],
+  ["Br",5,1,3,"brómico","bromic","bromato","bromate"],["Br",7,1,4,"perbrómico","perbromic","perbromato","perbromate"],
+  ["I",1,1,1,"hipoiodoso","hypoiodous","hipoiodito","hypoiodite"],["I",3,1,2,"iodoso","iodous","iodito","iodite"],
+  ["I",5,1,3,"iódico","iodic","iodato","iodate"],["I",7,1,4,"periódico","periodic","periodato","periodate"]
+].map(([x,ox,h,o,aes,aen,ses,sen])=>({x,ox,h,o,aes,aen,ses,sen}));
+
+/* ================= MOTOR DE NOMENCLATURA ================= */
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const sub=n=>n>1?`<sub>${n}</sub>`:"";
+// fórmula: lista de partes [símbolo|grupo, cantidad]; grupo = lista de partes
+function fHTML(p){return p.map(([s,n=1])=>Array.isArray(s)?(n>1?`(${fHTML(s)})${sub(n)}`:fHTML(s)):`${s}${sub(n)}`).join("")}
+function fTXT(p){return p.map(([s,n=1])=>Array.isArray(s)?(n>1?`(${fTXT(s)})${n}`:fTXT(s)):`${s}${n>1?n:""}`).join("")}
+const PRE_ES=["","mono","di","tri","tetra","penta","hexa","hepta"], PRE_EN=PRE_ES;
+const oxES=n=>({1:"monóxido",2:"dióxido",3:"trióxido",4:"tetróxido",5:"pentóxido",6:"hexóxido",7:"heptóxido"})[n];
+const oxEN=n=>({1:"monoxide",2:"dioxide",3:"trioxide",4:"tetroxide",5:"pentoxide",6:"hexoxide",7:"heptoxide"})[n];
+const sg=n=>n>0?`+${n}`:n<0?`−${-n}`:"0";
+function nombresMetal(m,ox,nounES,nounEN){
+  if(m.ox.length===1) return {es:[`${nounES} de ${m.es}`],en:[`${m.en} ${nounEN}`],nom:["Nombre único"]};
+  const i=m.ox.indexOf(ox);
+  return {es:[`${nounES} de ${m.es} (${ROM[ox]})`,`${nounES} ${m.tes[i]}`],en:[`${m.en}(${ROM[ox]}) ${nounEN}`,`${m.ten[i]} ${nounEN}`],nom:["Stock","Tradicional"]};
+}
+function cruce(sa,a,sb,b){const g=gcd(a,b);return {x:b/g,y:a/g,txt:`${sa} usa ${sg(a)} y ${sb} usa ${sg(-b)}. Se cruzan los números: ${sa}${b>1?b:""}${sb}${a>1?a:""}${g>1?` y se simplifica ÷${g}`:""}. Control: ${b/g}·(${sg(a)}) + ${a/g}·(${sg(-b)}) = 0 ✔`};}
+
+const GEN={
+  oxidoMetal(m,ox){const c=cruce(m.s,ox,"O",2),n=nombresMetal(m,ox,"óxido","oxide");
+    if(m.ox.length>1){n.es.push(`${oxES(c.y)} de ${c.x>1?PRE_ES[c.x]:""}${m.es}`);n.en.push(`${c.x>1?PRE_EN[c.x]:""}${m.en} ${oxEN(c.y)}`);n.nom.push("Atomicidad")}
+    return {tipo:"oxido",sub:"Óxido básico · basic oxide",p:[[m.s,c.x],["O",c.y]],...n,ox:{[m.s]:ox,O:-2},central:m.s,expl:c.txt}},
+  oxidoNoMetal(x,ox){const c=cruce(x.s,ox,"O",2);
+    const es=[`óxido de ${x.es} (${ROM[ox]})`,`${oxES(c.y)} de ${c.x>1?PRE_ES[c.x]:""}${x.es}`],en=[`${x.en}(${ROM[ox]}) oxide`,`${c.x>1?PRE_EN[c.x]:""}${x.en} ${oxEN(c.y)}`];
+    if(x.ox.length===1){es[0]=`óxido de ${x.es}`;en[0]=`${x.en} oxide`}
+    return {tipo:"oxido",sub:"Óxido ácido · acidic oxide",p:[[x.s,c.x],["O",c.y]],es,en,nom:[x.ox.length===1?"Nombre único":"Stock","Atomicidad"],ox:{[x.s]:ox,O:-2},central:x.s,expl:c.txt}},
+  hidruro(m,ox){const n=nombresMetal(m,ox,"hidruro","hydride");
+    return {tipo:"hidruro",p:[[m.s],["H",ox]],...n,ox:{[m.s]:ox,H:-1},central:m.s,expl:`En los hidruros metálicos el H usa −1. ${m.s} usa ${sg(ox)}, así que lleva ${ox} H: ${m.s}H${ox>1?ox:""}.`}},
+  salbin(m,ox,a){const c=cruce(m.s,ox,a.s,a.q),n=nombresMetal(m,ox,a.es,a.en);
+    return {tipo:"salbin",p:[[m.s,c.x],[a.s,c.y]],...n,ox:{[m.s]:ox,[a.s]:-a.q},central:m.s,expl:c.txt}},
+  hidroxido(m,ox){const n=nombresMetal(m,ox,"hidróxido","hydroxide");
+    return {tipo:"hidroxido",p:[[m.s],[[["O"],["H"]],ox]],...n,ox:{[m.s]:ox,O:-2,H:1},central:m.s,expl:`El grupo OH tiene carga −1 (ion hidróxido). ${m.s} usa ${sg(ox)}, así que lleva ${ox} grupo${ox>1?"s":""} OH${ox>1?" (con paréntesis)":""}.`}},
+  oxoacido(o){const x=NOMETALES.find(n=>n.s===o.x);
+    return {tipo:"oxoacido",p:[["H",o.h],[o.x],["O",o.o]],es:[`ácido ${o.aes}`],en:[`${o.aen} acid`],nom:["Tradicional"],ox:{H:1,[o.x]:o.ox,O:-2},central:o.x,
+      expl:`Control: ${o.h}·(+1) + (${sg(o.ox)}) + ${o.o}·(−2) = 0 ✔. ${x.es[0].toUpperCase()+x.es.slice(1)} con ${sg(o.ox)} → terminación del nombre según la tabla (hipo-oso / -oso / -ico / per-ico).`}},
+  oxosal(m,ox,o){const q=o.h,c=cruce(m.s,ox,"anión",q),an=[[o.x],["O",o.o]],n=nombresMetal(m,ox,o.ses,o.sen);
+    return {tipo:"oxosal",p:[[m.s,c.x],[an,c.y]],...n,ox:{[m.s]:ox,[o.x]:o.ox,O:-2},central:o.x,
+      expl:`El ácido ${o.aes} (${fTXT([["H",o.h],[o.x],["O",o.o]])}) pierde sus ${o.h} H y queda el anión ${o.ses} ${fTXT(an)} con carga −${q}. ${m.s} usa ${sg(ox)}: se cruzan y queda ${fTXT([[m.s,c.x],[an,c.y]])}.`}},
+  hidrogenosal(m,ox,x){const nm=x==="S"?["sulfuro","sulfide"]:["seleniuro","selenide"];const n=nombresMetal(m,ox,"hidrogeno"+nm[0],"hydrogen "+nm[1]);
+    n.es=n.es.concat(m.ox.length===1?[`${nm[0]} ácido de ${m.es}`]:[]);if(m.ox.length===1)n.nom.push("Otra forma");
+    return {tipo:"hidrogenosal",p:[[m.s],[[["H"],[x]],ox]],...n,ox:{[m.s]:ox,H:1,[x]:-2},central:m.s,expl:`El anión H${x} tiene carga −1 (${x} con −2 y H con +1). ${m.s} usa ${sg(ox)}: lleva ${ox} grupo${ox>1?"s":""} H${x}.`}},
+  amonio(a){const p=[[[["N"],["H",4]],a.q],[a.s]];
+    return {tipo:"amonio",p,es:[`${a.es} de amonio`],en:[`ammonium ${a.en}`],nom:["Nombre"],ox:{N:-3,H:1,[a.s]:-a.q},central:a.s,expl:`El catión amonio NH₄⁺ tiene carga +1. ${a.es[0].toUpperCase()+a.es.slice(1)} tiene −${a.q}: hacen falta ${a.q} amonio${a.q>1?"s":""}.`}}
+};
+const mkHidracido=h=>({tipo:"hidracido",p:h.f,es:h.es,en:h.en,nom:["Gaseoso (g)","Disuelto en agua (ac)"],ox:{H:1,[h.x]:h.ox},central:h.x,expl:`El no metal usa su número NEGATIVO (${sg(h.ox)}) y el H +1.`});
+const mkComun=c=>({tipo:"comun",p:c.f,es:[c.es],en:[c.en],nom:["Nombre común"],ox:{[c.x]:c.ox},central:c.x,expl:"Tienen nombres propios: se aprenden de memoria."});
+
+// todos los compuestos posibles (para el desafío)
+function todos(){const L=[];
+  METALES.forEach(m=>m.ox.forEach(ox=>{L.push(GEN.oxidoMetal(m,ox),GEN.hidruro(m,ox),GEN.hidroxido(m,ox));
+    ANIONES.forEach(a=>L.push(GEN.salbin(m,ox,a)));OXO.forEach(o=>L.push(GEN.oxosal(m,ox,o)));
+    if(ox<=2)["S"].forEach(x=>L.push(GEN.hidrogenosal(m,ox,x)));}));
+  NOMETALES.forEach(x=>x.ox.forEach(ox=>L.push(GEN.oxidoNoMetal(x,ox))));
+  OXO.forEach(o=>L.push(GEN.oxoacido(o)));HIDRACIDOS.forEach(h=>L.push(mkHidracido(h)));COMUNES.forEach(c=>L.push(mkComun(c)));
+  ANIONES.filter(a=>["F","Cl","Br","I","S"].includes(a.s)).forEach(a=>L.push(GEN.amonio(a)));
+  L.forEach(c=>{c.ft=fTXT(c.p);c.fh=fHTML(c.p)});return L;}
+const TODOS=todos();
+
+/* ================= PROGRESO (solo en este navegador) ================= */
+const NIVELES=[[0,"Átomo"],[60,"Molécula"],[150,"Ion"],[280,"Reactivo"],[450,"Catalizador"],[700,"Química Pro"],[1000,"Leyenda del Lab"]];
+let est={xp:0,racha:0,mejor:0,hechos:{}};
+try{const g=localStorage.getItem("chemlab");if(g)est=Object.assign(est,JSON.parse(g))}catch(e){}
+function guardar(){try{localStorage.setItem("chemlab",JSON.stringify(est))}catch(e){}}
+function sumar(xp,msg){const antes=nivel().i;est.xp+=xp;guardar();pintarNivel();const d=nivel();
+  if(d.i>antes)toast(`¡Subiste a ${d.nombre}! Level up 🎉`);else if(msg)toast(msg)}
+function nivel(){let i=0;NIVELES.forEach(([x],k)=>{if(est.xp>=x)i=k});const sig=NIVELES[i+1];
+  return {i,nombre:`Nivel ${i+1} · ${NIVELES[i][1]}`,pct:sig?(est.xp-NIVELES[i][0])/(sig[0]-NIVELES[i][0])*100:100,falta:sig?sig[0]-est.xp:0}}
+function pintarNivel(){const n=nivel();document.getElementById("nivelNombre").textContent=n.nombre;
+  document.getElementById("nivelBarra").style.width=n.pct+"%";document.getElementById("xpTxt").textContent=`${est.xp} XP${n.falta?` · faltan ${n.falta} para el próximo`:" · nivel máximo"}`;
+  document.getElementById("racha").textContent=`Racha ${est.racha}`}
+let tt;function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("ver");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("ver"),2200)}
+
+/* voz en inglés */
+function hablar(t){try{const u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){toast("Este navegador no tiene voz")}}
+const voz=t=>("speechSynthesis" in window)?`<button class="speak" data-voz="${t.replace(/"/g,"")}" aria-label="Escuchar en inglés: ${t.replace(/"/g,"")}">▶ oír</button>`:"";
+document.addEventListener("click",e=>{const b=e.target.closest("[data-voz]");if(b)hablar(b.dataset.voz)});
+const col=t=>`var(${T[t].c})`;
+const chip=t=>`<span class="chip" style="--c:${col(t)}">${T[t].es} · <span style="font-style:italic">${T[t].en}</span></span>`;
+
+/* ================= PESTAÑAS ================= */
+const TABS=[
+  ["ruta","Paso a paso","--ok"],["lec","Inglés (clase)","--accent"],["lum","Luminol","--t-salbin"],["dot","Dot & cross","--t-salbin"],["kit","Lab kit","--t-hidroxido"],["mapa","Mapa","--accent"],["ox","Nº de oxidación","--accent"],["bin","Binarios","--t-oxido"],["ter","Ternarios","--t-oxoacido"],
+  ["lab","Lab 3D","--t-hidruro"],["const","Constructor","--t-salbin"],["cartas","Tarjetas EN","--t-hidroxido"],["des","Desafío","--t-oxosal"],["ia","Preguntale a la IA","--t-hidracido"]
+];
+const tabs=document.getElementById("tabs");
+tabs.innerHTML=TABS.map(([id,t,c])=>`<button role="tab" id="tab-${id}" aria-selected="false" data-tab="${id}"><span class="pt" style="background:var(${c})"></span>${t}</button>`).join("");
+tabs.addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)ir(b.dataset.tab)});
+const vista=document.getElementById("vista");
+function ir(id){document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===id));
+  try{localStorage.setItem("chemlab-tab",id)}catch(e){}
+  if(id!=="lab")pararLab();
+  (VISTAS[id]||VISTAS.mapa)();vista.focus?.();window.scrollTo({top:0})}
+
+/* ---------- tarjetas de teoría ---------- */
+function ficha(t,{que,arma,nombraES,nombraEN,ejemplos,ojo}){
+  return `<article class="card tipo" style="--c:${col(t)}">
+    <div class="fila"><h3>${T[t].es} <span class="en" style="font-weight:400">${T[t].en}</span></h3>${voz(T[t].en)}</div>
+    <p><b>Qué es:</b> ${que}</p><p><b>Se arma con:</b> ${arma}</p>
+    <p><b>Cómo se nombra:</b> ${nombraES}</p><p class="en">${nombraEN}</p>
+    <div class="ej">${ejemplos.map(c=>`<span class="f">${c.fh}</span><span>${c.es[c.es.length>1?1:0]} · <i>${c.en[c.en.length>1?1:0]}</i>${voz(c.en[c.en.length>1?1:0])}</span>`).join("")}</div>
+    ${ojo?`<div class="ojo"><b>Ojo:</b> ${ojo}</div>`:""}
+  </article>`}
+const M=s=>METALES.find(m=>m.s===s), X=s=>NOMETALES.find(m=>m.s===s), A=s=>ANIONES.find(a=>a.s===s), O=(x,ox)=>OXO.find(o=>o.x===x&&o.ox===ox);
+const con=c=>(c.ft=fTXT(c.p),c.fh=fHTML(c.p),c);
+
+const VISTAS={
+ruta(){vistaRuta()},
+lec(){lecciones()},
+lum(){vistaLuminol()},
+dot(){vistaDot()},
+kit(){vistaKit()},
+mapa(){vista.innerHTML=`
+  <section class="card" style="gap:14px">
+    <h2>La idea en 30 segundos</h2>
+    <p>Un <b>compuesto</b> <span class="en">compound</span> es una sustancia hecha de <b>distintos elementos</b> unidos. Para nombrarlo necesitás saber dos cosas: <b>qué elementos tiene</b> (eso dice de qué familia es) y <b>con qué número de oxidación trabaja cada uno</b> (eso dice la terminación del nombre).</p>
+    <p>En inglés pasa lo mismo, casi con las mismas terminaciones. Si aprendés el truco de abajo, estudiás <b>las dos materias al mismo tiempo</b>.</p>
+  </section>
+  <section class="card">
+    <h2>El puente castellano ↔ inglés</h2>
+    <div class="scroll"><table class="puente">
+      <tr><th>Castellano</th><th>English</th><th>Ejemplo</th></tr>
+      <tr><td><b>-uro</b></td><td><b>-ide</b></td><td>cloruro → <i>chloride</i> ${voz("chloride")}</td></tr>
+      <tr><td><b>-ito</b></td><td><b>-ite</b></td><td>nitrito → <i>nitrite</i> ${voz("nitrite")}</td></tr>
+      <tr><td><b>-ato</b></td><td><b>-ate</b></td><td>sulfato → <i>sulfate</i> ${voz("sulfate")}</td></tr>
+      <tr><td><b>-oso</b></td><td><b>-ous</b></td><td>ferroso → <i>ferrous</i> ${voz("ferrous")}</td></tr>
+      <tr><td><b>-ico</b></td><td><b>-ic</b></td><td>férrico → <i>ferric</i> ${voz("ferric")}</td></tr>
+      <tr><td><b>hipo- / per-</b></td><td><b>hypo- / per-</b></td><td>hipoclorito → <i>hypochlorite</i> ${voz("hypochlorite")}</td></tr>
+      <tr><td>ácido ___hídrico</td><td><b>hydro___ic</b> acid</td><td>ácido clorhídrico → <i>hydrochloric acid</i> ${voz("hydrochloric acid")}</td></tr>
+      <tr><td>di-, tri-, tetra-…</td><td>di-, tri-, tetra-…</td><td>dióxido de carbono → <i>carbon dioxide</i> ${voz("carbon dioxide")}</td></tr>
+      <tr><td>hierro (III)</td><td>iron(III)</td><td>se lee <i>“iron three”</i> ${voz("iron three oxide")}</td></tr>
+    </table></div>
+    <div class="ojo"><b>El orden se da vuelta:</b> en castellano decimos primero el negativo (<i>cloruro</i> de <i>sodio</i>), en inglés primero el positivo (<i>sodium chloride</i>). Igual que “casa blanca” → <i>white house</i>.</div>
+  </section>
+  <section class="card">
+    <h2>Mapa de familias</h2>
+    <p class="dato">Cada familia tiene su color, que se repite en todo el sitio. Tocá una para ir a su explicación.</p>
+    <div class="mapa">
+      <div class="rama"><h3>Sustancias simples</h3><div class="hojas">${hoja("simple","Un solo elemento","O₂, Fe, P₄","mapa")}</div></div>
+      <div class="rama"><h3>Binarios <span class="en" style="font-weight:400;font-size:.85rem">binary</span></h3><div class="hojas">
+        ${hoja("oxido","Elemento + O","Na₂O, CO₂","bin")}${hoja("hidruro","Metal + H","LiH, FeH₂","bin")}${hoja("hidracido","H + no metal","HCl, H₂S","bin")}${hoja("salbin","Metal + no metal","NaCl, Ni₄C₃","bin")}</div></div>
+      <div class="rama"><h3>Ternarios <span class="en" style="font-weight:400;font-size:.85rem">ternary</span></h3><div class="hojas">
+        ${hoja("hidroxido","Metal + O + H","KOH, Cu(OH)₂","ter")}${hoja("oxoacido","H + no metal + O","H₂SO₄, HClO₃","ter")}${hoja("oxosal","Metal + no metal + O","Fe(NO₃)₃","ter")}${hoja("hidrogenosal","Metal + HS⁻","NaHS","ter")}${hoja("amonio","NH₄⁺ + anión","NH₄Cl","ter")}</div></div>
+    </div>
+  </section>
+  <section class="card"><h3>Plan de estudio corto</h3>
+    <p>1) Número de oxidación · 2) Binarios · 3) Ternarios · 4) Constructor para practicar · 5) Desafío de 10 preguntas. Cada parte lleva unos 10 minutos. Entre una y otra, cortá 2 minutos.</p></section>`},
+
+ox(){const P=[
+  ["O<sub>3</sub>","O",0,"Es una sustancia simple: todo vale 0."],
+  ["H<sub>2</sub><u>S</u>","S",-2,"2·(+1) + S = 0 → S = −2"],
+  ["<u>Br</u><sup>−</sup>","Br",-1,"Ion monoatómico: el número es igual a la carga → −1"],
+  ["<u>O</u>H<sup>−</sup>","O",-2,"O + (+1) = −1 → O = −2"],
+  ["<u>Sn</u><sup>4+</sup>","Sn",4,"Ion monoatómico: número = carga → +4"],
+  ["<u>N</u>O<sup>+</sup>","N",3,"N + (−2) = +1 → N = +3"],
+  ["Na<sub>2</sub><u>Cr</u>O<sub>4</sub>","Cr",6,"2·(+1) + Cr + 4·(−2) = 0 → Cr = +6"],
+  ["<u>Mn</u>O<sub>4</sub><sup>−</sup>","Mn",7,"Mn + 4·(−2) = −1 → Mn = +7"],
+  ["K<sub>2</sub><u>Cr</u><sub>2</sub>O<sub>7</sub>","Cr",6,"2·(+1) + 2·Cr + 7·(−2) = 0 → 2·Cr = 12 → Cr = +6"],
+  ["<u>S</u>O<sub>4</sub><sup>2−</sup>","S",6,"S + 4·(−2) = −2 → S = +6"]];
+  let i=0;
+  vista.innerHTML=`
+  <section class="grid2">
+    <article class="card"><h2>Número de oxidación</h2><p class="en">oxidation number (or oxidation state)</p>
+      <p>Es un número <b>con signo</b> (+ o −) que dice cuántos electrones “gana” o “pierde” un átomo cuando se une. El que es más <b>electronegativo</b> <span class="en">electronegativity</span> se queda con los electrones del enlace y lleva el signo negativo.</p>
+      <p>Ejemplo: en <span class="f">HCl</span> el cloro atrae más los electrones → <b>Cl −1</b> y <b>H +1</b>.</p>
+      <div class="ojo"><b>La regla de oro:</b> en un compuesto neutro, <b>todo suma cero</b>. En un ion, suma la carga del ion. <span class="en">The sum is zero.</span></div>
+    </article>
+    <article class="card"><h3>Las 7 reglas</h3>
+      <ol style="margin:0;padding-left:1.2em;display:grid;gap:6px">
+        <li>Sustancia simple (O₂, Fe): <b>0</b>.</li>
+        <li>Metales alcalinos (Li, Na, K): <b>+1</b>. Alcalinotérreos (Mg, Ca, Ba): <b>+2</b>.</li>
+        <li>Flúor combinado: siempre <b>−1</b>.</li>
+        <li>Oxígeno combinado: <b>−2</b> (salvo peróxidos y con flúor).</li>
+        <li>Hidrógeno: <b>+1</b> con no metales, <b>−1</b> con metales (hidruros).</li>
+        <li>Ion de un solo átomo: número = carga (Ca²⁺ → +2).</li>
+        <li>Ion de varios átomos: la suma = la carga del ion.</li>
+      </ol></article>
+  </section>
+  <section class="card" id="oxq"></section>`;
+  const pintar=()=>{const [f,el,ok,paso]=P[i];const ops=[ok,...[...new Set([ok-1,ok+1,ok+2,ok-2,-ok,ok-3].filter(v=>v!==ok&&v>=-4&&v<=7))].slice(0,3)].sort(()=>Math.random()-.5);
+    document.getElementById("oxq").innerHTML=`<div class="fila"><h3>Práctica ${i+1} de ${P.length}</h3><span class="dato">Del TP9, parte 1</span></div>
+      <div class="ox-q"><span class="f">${f}</span><span>¿Con qué número trabaja <b>${el}</b>?</span></div>
+      <div class="ops">${ops.map(v=>`<button class="op" data-v="${v}">${sg(v)}</button>`).join("")}</div><div id="oxr"></div>`;
+    document.querySelectorAll("#oxq .op").forEach(b=>b.onclick=()=>{const v=+b.dataset.v;document.querySelectorAll("#oxq .op").forEach(x=>{x.disabled=true;if(+x.dataset.v===ok)x.classList.add("ok")});
+      if(v===ok){est.racha++;sumar(5,"+5 XP")}else{b.classList.add("mal");est.racha=0;guardar();pintarNivel()}
+      document.getElementById("oxr").innerHTML=`<div class="pasos">${v===ok?"¡Bien! ":"Era "+sg(ok)+". "}${paso}</div><div class="acciones" style="justify-content:flex-start;margin-top:10px"><button class="btn" id="oxsig">${i<P.length-1?"Siguiente":"Volver a empezar"}</button></div>`;
+      document.getElementById("oxsig").onclick=()=>{i=(i+1)%P.length;pintar()}})};
+  pintar()},
+
+bin(){const fe=M("Fe"),pb=M("Pb");
+  vista.innerHTML=`<h2>Compuestos binarios <span class="en" style="font-size:1rem;font-weight:400">binary compounds</span></h2>
+  <p>Tienen <b>dos elementos</b> distintos. Primero se escribe el positivo, después el negativo, y se cruzan los números para que todo sume cero.</p>
+  <section class="grid2">
+  ${ficha("oxido",{que:"un elemento unido al oxígeno (−2). Con metal es <b>óxido básico</b>; con no metal, <b>óxido ácido</b>.",arma:"elemento (+) + O (−2)",
+    nombraES:"un solo número: <i>óxido de sodio</i>. Varios: Stock <i>óxido de hierro (III)</i>, tradicional <i>óxido férrico</i> o atomicidad <i>trióxido de dihierro</i>.",
+    nombraEN:"sodium oxide · iron(III) oxide · ferric oxide · carbon dioxide",
+    ejemplos:[GEN.oxidoMetal(M("Na"),1),GEN.oxidoMetal(fe,3),GEN.oxidoMetal(pb,2),GEN.oxidoNoMetal(X("C"),4)].map(con),
+    ojo:"al elemento que acompaña al O no se le pone “mono”. Es <i>monóxido de carbono</i>, no “monóxido de monocarbono”."})}
+  ${ficha("hidruro",{que:"un metal con hidrógeno. Acá el H trabaja con <b>−1</b>.",arma:"metal (+) + H (−1)",
+    nombraES:"<i>hidruro de litio</i>; con varios números: <i>hidruro ferroso</i> o <i>hidruro de hierro (II)</i>.",nombraEN:"lithium hydride · iron(II) hydride · ferrous hydride",
+    ejemplos:[GEN.hidruro(M("Li"),1),GEN.hidruro(fe,2),GEN.hidruro(M("Au"),3)].map(con)})}
+  ${ficha("hidracido",{que:"hidrógeno con F, Cl, Br, I o S. Disueltos en agua son ácidos.",arma:"H (+1) + no metal con su número NEGATIVO",
+    nombraES:"como gas: <i>cloruro de hidrógeno</i>. En agua: <i>ácido clorhídrico</i>.",nombraEN:"hydrogen chloride (gas) · hydrochloric acid (aqueous)",
+    ejemplos:HIDRACIDOS.slice(1,2).concat(HIDRACIDOS.slice(4)).map(mkHidracido).map(con),
+    ojo:"(g) = gas, (ac) = acuoso. En inglés: <i>(g)</i> y <i>(aq)</i>, de <i>aqueous</i>. Para el azufre la raíz es <b>sulf-</b>: sulfhídrico."})}
+  ${ficha("salbin",{que:"metal con no metal. Son sólidos hechos de iones, con puntos de fusión altos.",arma:"metal (+) + no metal (−)",
+    nombraES:"<i>(no metal)-uro de (metal)</i>: <i>cloruro de sodio</i>. Varios números: <i>carburo niquélico</i>.",nombraEN:"sodium chloride · nickel(III) carbide · nickelic carbide",
+    ejemplos:[GEN.salbin(M("Na"),1,A("Cl")),GEN.salbin(M("Zn"),2,A("S")),GEN.salbin(M("Ni"),3,A("C"))].map(con),
+    ojo:"los números negativos de los no metales: C, Si −4 · N, P, As −3 · S, Se, Te −2 · F, Cl, Br, I −1."})}
+  </section>
+  <section class="card tipo" style="--c:${col("comun")}"><h3>Compuestos de H con nombre propio <span class="en" style="font-weight:400">common names</span></h3>
+    <p>No siguen reglas: se aprenden como se aprende una palabra nueva.</p>
+    <div class="grid3">${COMUNES.map(c=>`<div><span class="f" style="font-size:1.2rem">${fHTML(c.f)}</span> ${c.es} · <i>${c.en}</i>${voz(c.en)}</div>`).join("")}</div></section>`},
+
+ter(){const fe=M("Fe"),cu=M("Cu");
+  vista.innerHTML=`<h2>Compuestos ternarios <span class="en" style="font-size:1rem;font-weight:400">ternary compounds</span></h2>
+  <p>Tienen <b>tres elementos</b> distintos. El truco: casi siempre hay un “grupo” que viaja junto (OH⁻, NO₃⁻, SO₄²⁻…) y se trata como si fuera una sola pieza.</p>
+  <section class="grid2">
+  ${ficha("hidroxido",{que:"un metal con el grupo OH (ion hidróxido, carga −1). Son cáusticos: queman la piel.",arma:"metal (+) + OH⁻",
+    nombraES:"<i>hidróxido de potasio</i>; varios números: <i>hidróxido cúprico</i> o <i>hidróxido de cobre (II)</i>.",nombraEN:"potassium hydroxide · copper(II) hydroxide · cupric hydroxide",
+    ejemplos:[GEN.hidroxido(M("K"),1),GEN.hidroxido(cu,2),GEN.hidroxido(M("Na"),1)].map(con),ojo:"el NaOH es la <b>soda cáustica</b> <span class='en'>caustic soda</span>, el más usado en el laboratorio."})}
+  ${ficha("oxoacido",{que:"hidrógeno + no metal + oxígeno. En agua son ácidos.",arma:"H (+1) + no metal (+) + O (−2)",
+    nombraES:"<i>ácido</i> + raíz del no metal con <b>hipo-oso / -oso / -ico / per-ico</b>, de menor a mayor número.",nombraEN:"hypochlorous · chlorous · chloric · perchloric acid",
+    ejemplos:[GEN.oxoacido(O("Cl",5)),GEN.oxoacido(O("S",6)),GEN.oxoacido(O("N",5)),GEN.oxoacido(O("P",5))].map(con),
+    ojo:"con dos números (S, N, P) se usa -oso para el menor y -ico para el mayor. Hipo- y per- solo aparecen en los halógenos (Cl, Br, I), que tienen cuatro."})}
+  ${ficha("oxosal",{que:"un metal unido a un <b>oxoanión</b> (el oxoácido sin sus H).",arma:"metal (+) + oxoanión (−)",
+    nombraES:"el ácido cambia la terminación: <b>-oso → -ito</b>, <b>-ico → -ato</b>. <i>nitrato férrico</i>, <i>sulfato de sodio</i>.",nombraEN:"iron(III) nitrate · ferric nitrate · sodium sulfate",
+    ejemplos:[GEN.oxosal(fe,3,O("N",5)),GEN.oxosal(M("Na"),1,O("S",6)),GEN.oxosal(M("Ca"),2,O("P",5))].map(con),
+    ojo:"la frase para acordarte: <b>el oso chiquito → ito, el pico → ato</b>. En inglés es igual: <i>-ous → -ite, -ic → -ate</i>."})}
+  ${ficha("hidrogenosal",{que:"un metal con el anión HS⁻ (o HSe⁻).",arma:"metal (+) + HS⁻",
+    nombraES:"<i>sulfuro ácido de sodio</i> o <i>hidrogenosulfuro de sodio</i>.",nombraEN:"sodium hydrogen sulfide",
+    ejemplos:[GEN.hidrogenosal(M("Na"),1,"S"),GEN.hidrogenosal(M("Ca"),2,"S")].map(con)})}
+  ${ficha("amonio",{que:"el catión amonio NH₄⁺ unido a un anión de un solo elemento.",arma:"NH₄⁺ + anión (−)",
+    nombraES:"<i>(anión) de amonio</i>: <i>cloruro de amonio</i>.",nombraEN:"ammonium chloride",
+    ejemplos:[GEN.amonio(A("Cl")),GEN.amonio(A("S"))].map(con),ojo:"no tiene metal y sin embargo es una sal: el NH₄⁺ hace el papel del metal."})}
+  </section>
+  <section class="card"><h3>Tabla de terminaciones de los oxoácidos y oxosales</h3>
+    <div class="scroll"><table class="puente">
+      <tr><th>Cl · Br · I</th><th>Ácido</th><th>Sal</th><th>English</th></tr>
+      <tr><td>+1</td><td>hipo___oso</td><td>hipo___ito</td><td>hypo___ous / hypo___ite</td></tr>
+      <tr><td>+3</td><td>___oso</td><td>___ito</td><td>___ous / ___ite</td></tr>
+      <tr><td>+5</td><td>___ico</td><td>___ato</td><td>___ic / ___ate</td></tr>
+      <tr><td>+7</td><td>per___ico</td><td>per___ato</td><td>per___ic / per___ate</td></tr>
+    </table></div>
+    <p class="dato">N, P: +3 y +5 · S, Se: +4 y +6 · C, Si: solo +4 (-ico).</p></section>`},
+
+lab(){vista.innerHTML=`<h2>Lab 3D</h2><p>Girá cada molécula con el dedo o el mouse. Mirá qué átomos tiene y cómo se acomodan.</p>
+  <section class="lab"><canvas id="lienzo" aria-label="Modelo 3D de la molécula"></canvas>
+    <div class="card" id="molinfo"></div></section>
+  <div class="mols" id="mols">${MOLS.map((m,i)=>`<button data-i="${i}" aria-pressed="${i===0}">${m.f}</button>`).join("")}</div>
+  <div class="leyenda" id="leyenda"></div>`;
+  iniciarLab()},
+
+const(){vista.innerHTML=`<h2>Constructor de fórmulas</h2>
+  <p>Elegí la familia y los elementos. El constructor arma la fórmula, te muestra <b>por qué</b> y te da todos los nombres en castellano y en inglés.</p>
+  <section class="card"><div class="ctrl" id="ctrl"></div></section><section class="card resultado" id="res"></section>`;
+  armarConstructor()},
+
+cartas(){mazo=GLOS.map((g,i)=>i).sort(()=>Math.random()-.5);pos=0;vista.innerHTML=`<h2>Tarjetas de inglés técnico</h2>
+  <p>Tocá la tarjeta para darla vuelta. Si ya la sabías, sumás XP. Si no, vuelve al mazo.</p>
+  <section class="card" style="gap:16px"><div class="fila"><span id="cuenta" class="dato"></span><label class="dato"><input type="checkbox" id="inv"> Mostrar primero en inglés</label></div>
+    <div class="flash" id="flash" tabindex="0" role="button" aria-label="Dar vuelta la tarjeta"><div class="flash-in"><div class="cara" id="cf"></div><div class="cara atras" id="ca"></div></div></div>
+    <div class="acciones"><button class="btn sec" id="noSe">Repasar de nuevo</button><button class="btn" id="siSe">La sabía ✔</button></div></section>`;
+  pintarCarta()},
+
+des(){nuevoDesafio()},
+
+ia(){vista.innerHTML=`<h2>Preguntale a la IA</h2>
+  <p>Preguntá lo que no entiendas, en castellano o en inglés: un término, por qué un nombre termina así, o que te explique un ejercicio paso a paso.</p>
+  <section class="card chat"><div class="sug" id="sug">${["¿Cómo se dice “óxido férrico” en inglés?","Explicame el número de oxidación con un ejemplo fácil","¿Qué diferencia hay entre un oxoácido y una oxosal?","¿Por qué se dice sodium chloride y no chloride of sodium?","Tomame 3 preguntas de óxidos"].map(s=>`<button>${s}</button>`).join("")}</div>
+    <label for="preg" class="dato">Tu pregunta</label><textarea id="preg" placeholder="Ej: ¿qué significa aqueous?"></textarea>
+    <div class="acciones" style="justify-content:flex-start"><button class="btn" id="enviar">Preguntar</button></div>
+    <div class="respuesta" id="resp" aria-live="polite">La respuesta aparece acá.</div></section>`;
+  prepararIA()}
+};
+function hoja(t,a,b,dest){return `<button class="hoja" style="--c:${col(t)}" data-ir="${dest}"><b>${T[t].es}</b><span>${a} · <span class="f">${b}</span></span><span class="en">${T[t].en}</span></button>`}
+vista.addEventListener("click",e=>{const b=e.target.closest("[data-ir]");if(b)ir(b.dataset.ir)});
+
+
+/* ================= LESSONS (inglés con subtítulos) ================= */
+// p = párrafo [EN, ES] · q = pregunta [EN, ES, opciones, índice correcto, porqué EN, porqué ES]
+const LECS=[
+ {id:"l1",c:"--accent",en:"Compounds & oxidation numbers",es:"Compuestos y número de oxidación",s:[
+  ["p","A <b>compound</b> is a substance made of two or more <b>different elements</b> joined together.","Un <b>compuesto</b> es una sustancia formada por dos o más <b>elementos distintos</b> unidos."],
+  ["p","Water, <span class='f'>H₂O</span>, is a compound: it has hydrogen and oxygen.","El agua, H₂O, es un compuesto: tiene hidrógeno y oxígeno."],
+  ["q","Is <span class='f'>O₂</span> a compound?","¿El O₂ es un compuesto?",["Yes, it has two atoms","No, it has only one element"],1,"O₂ has two atoms, but both are oxygen. It is a <b>simple substance</b>.","El O₂ tiene dos átomos, pero los dos son oxígeno. Es una <b>sustancia simple</b>."],
+  ["p","To name a compound, we need the <b>oxidation number</b> of each element.","Para nombrar un compuesto necesitamos el <b>número de oxidación</b> de cada elemento."],
+  ["p","It is a number with a sign, <b>+ or −</b>. The more <b>electronegative</b> atom takes the electrons and gets the negative sign.","Es un número con signo, <b>+ o −</b>. El átomo más <b>electronegativo</b> se queda con los electrones y lleva el signo negativo."],
+  ["q","In <span class='f'>HCl</span>, chlorine is more electronegative. What is the oxidation number of Cl?","En HCl el cloro es más electronegativo. ¿Qué número de oxidación tiene el Cl?",["+1","−1","0"],1,"Chlorine takes the electrons, so it is <b>−1</b>, and hydrogen is +1.","El cloro se queda con los electrones: es <b>−1</b>, y el hidrógeno +1."],
+  ["p","<b>Golden rule:</b> in a neutral compound, all the oxidation numbers <b>add up to zero</b>.","<b>Regla de oro:</b> en un compuesto neutro, todos los números de oxidación <b>suman cero</b>."],
+  ["p","Oxygen is almost always <b>−2</b>. Hydrogen is <b>+1</b> with nonmetals and <b>−1</b> with metals.","El oxígeno casi siempre es <b>−2</b>. El hidrógeno es <b>+1</b> con no metales y <b>−1</b> con metales."],
+  ["q","In <span class='f'>H₂O</span>: 2·(+1) + O = 0. So oxygen is…","En H₂O: 2·(+1) + O = 0. Entonces el oxígeno es…",["+2","−2","−1"],1,"2 − 2 = 0 ✔. Oxygen is −2.","2 − 2 = 0 ✔. El oxígeno es −2."],
+  ["q","An element alone, like <span class='f'>Fe</span> or <span class='f'>O₂</span>, has oxidation number…","Un elemento solo, como Fe u O₂, tiene número de oxidación…",["0","+1","It depends"],0,"Simple substances are always <b>0</b>.","Las sustancias simples siempre son <b>0</b>."]]},
+ {id:"l2",c:"--t-oxido",en:"Oxides",es:"Óxidos",s:[
+  ["p","An <b>oxide</b> is a binary compound: an element + <b>oxygen</b>.","Un <b>óxido</b> es un compuesto binario: un elemento + <b>oxígeno</b>."],
+  ["p","Metal + oxygen = <b>basic oxide</b>. Nonmetal + oxygen = <b>acidic oxide</b>.","Metal + oxígeno = <b>óxido básico</b>. No metal + oxígeno = <b>óxido ácido</b>."],
+  ["q","Sodium is a metal. <span class='f'>Na₂O</span> is…","El sodio es un metal. El Na₂O es…",["a basic oxide","an acidic oxide"],0,"Metal + oxygen → <b>basic oxide</b>.","Metal + oxígeno → <b>óxido básico</b>."],
+  ["p","To write the formula, <b>cross</b> the numbers. Iron uses +3 and oxygen −2 → <span class='f'>Fe₂O₃</span>.","Para escribir la fórmula se <b>cruzan</b> los números. El hierro usa +3 y el oxígeno −2 → Fe₂O₃."],
+  ["p","Check: 2·(+3) + 3·(−2) = 6 − 6 = <b>0</b> ✔","Control: 2·(+3) + 3·(−2) = 6 − 6 = <b>0</b> ✔"],
+  ["q","Aluminum uses +3. The formula of aluminum oxide is…","El aluminio usa +3. La fórmula del óxido de aluminio es…",["AlO","Al₂O₃","Al₃O₂"],1,"Cross 3 and 2: <span class='f'>Al₂O₃</span>. 2·3 − 3·2 = 0 ✔","Se cruzan 3 y 2: Al₂O₃. 2·3 − 3·2 = 0 ✔"],
+  ["p","If the metal has only one number, the name is simple: <b>sodium oxide</b>.","Si el metal tiene un solo número, el nombre es simple: <b>óxido de sodio</b>."],
+  ["p","If it has two, there are three ways. Stock: <b>iron(III) oxide</b>. Traditional: <b>ferric oxide</b>. Prefixes: <b>diiron trioxide</b>.","Si tiene dos, hay tres formas. Stock: <b>óxido de hierro (III)</b>. Tradicional: <b>óxido férrico</b>. Prefijos: <b>trióxido de dihierro</b>."],
+  ["p","<b>-ous</b> = the lower number, <b>-ic</b> = the higher number. Just like Spanish <b>-oso</b> and <b>-ico</b>.","<b>-ous</b> = el número menor, <b>-ic</b> = el mayor. Igual que <b>-oso</b> e <b>-ico</b> en castellano."],
+  ["q","Iron can be +2 or +3. <span class='f'>FeO</span> uses +2, so it is…","El hierro puede ser +2 o +3. El FeO usa +2, así que es…",["ferric oxide","ferrous oxide"],1,"+2 is the lower one → <b>-ous</b> → ferrous oxide (óxido ferroso).","+2 es el menor → <b>-oso</b> → óxido ferroso (ferrous oxide)."],
+  ["p","Word order changes! Spanish: óxido <i>de hierro</i>. English: <b>iron</b> oxide. The element goes first.","¡Cambia el orden! En castellano: óxido de hierro. En inglés: iron oxide. El elemento va primero."],
+  ["q","How do you say <b>dióxido de carbono</b>?","¿Cómo se dice dióxido de carbono?",["dioxide of carbon","carbon dioxide","carbonic oxide"],1,"Element first, then the oxide: <b>carbon dioxide</b>.","Primero el elemento, después el óxido: <b>carbon dioxide</b>."]]},
+ {id:"l3",c:"--t-salbin",en:"Hydrides, binary acids & binary salts",es:"Hidruros, hidrácidos y sales binarias",s:[
+  ["p","A <b>metal hydride</b> is a metal + hydrogen. Here hydrogen is <b>−1</b>. Example: <span class='f'>LiH</span>, lithium hydride.","Un <b>hidruro metálico</b> es metal + hidrógeno. Acá el hidrógeno es <b>−1</b>. Ejemplo: LiH, hidruro de litio."],
+  ["q","Iron(II) hydride: Fe is +2 and H is −1. The formula is…","Hidruro de hierro (II): Fe +2 y H −1. La fórmula es…",["FeH","FeH₂","Fe₂H"],1,"+2 needs two H of −1: <span class='f'>FeH₂</span>.","El +2 necesita dos H de −1: FeH₂."],
+  ["p","A <b>binary acid</b> (hydracid) is hydrogen + F, Cl, Br, I or S. The nonmetal uses its <b>negative</b> number.","Un <b>hidrácido</b> es hidrógeno + F, Cl, Br, I o S. El no metal usa su número <b>negativo</b>."],
+  ["p","As a gas: <b>hydrogen chloride</b>. Dissolved in water (<b>aqueous</b>): <b>hydrochloric acid</b>.","Como gas: <b>cloruro de hidrógeno</b>. Disuelto en agua (<b>acuoso</b>): <b>ácido clorhídrico</b>."],
+  ["q","<span class='f'>H₂S</span> dissolved in water is…","El H₂S disuelto en agua es…",["sulfuric acid","hydrosulfuric acid","hydrogen sulfate"],1,"hydro-…-ic acid: <b>hydrosulfuric acid</b> (ácido sulfhídrico).","hydro-…-ic acid: <b>hydrosulfuric acid</b> (ácido sulfhídrico)."],
+  ["p","Some have special names: <span class='f'>H₂O</span> water, <span class='f'>NH₃</span> ammonia, <span class='f'>CH₄</span> methane.","Algunos tienen nombres propios: H₂O agua, NH₃ amoníaco, CH₄ metano."],
+  ["p","A <b>binary salt</b> is a metal + a nonmetal. In English the nonmetal ends in <b>-ide</b> (Spanish: <b>-uro</b>).","Una <b>sal binaria</b> es metal + no metal. En inglés el no metal termina en <b>-ide</b> (en castellano, <b>-uro</b>)."],
+  ["q","<b>Cloruro</b> in English is…","¿Cómo se dice cloruro en inglés?",["chlorate","chloride","chlorine"],1,"-uro → <b>-ide</b>: chloride. (Chlorine is the element, chlorate is -ato.)","-uro → <b>-ide</b>: chloride. (Chlorine es el elemento, chlorate es -ato.)"],
+  ["p","<span class='f'>NaCl</span> is sodium chloride: table salt. Salts are made of <b>ions</b> and are solid at room temperature.","El NaCl es el cloruro de sodio: la sal de mesa. Las sales están formadas por <b>iones</b> y son sólidas a temperatura ambiente."],
+  ["q","Zinc (+2) and sulfur (−2) make…","Zinc (+2) y azufre (−2) forman…",["ZnS","Zn₂S","ZnS₂"],0,"+2 and −2 already add up to zero: <span class='f'>ZnS</span>, zinc sulfide.","+2 y −2 ya suman cero: ZnS, sulfuro de zinc."]]},
+ {id:"l4",c:"--t-oxoacido",en:"Hydroxides & oxoacids",es:"Hidróxidos y oxoácidos",s:[
+  ["p","A <b>hydroxide</b> is a metal + the <b>OH</b> group. OH has a charge of <b>−1</b>: the hydroxide ion.","Un <b>hidróxido</b> es metal + el grupo <b>OH</b>. El OH tiene carga <b>−1</b>: el ion hidróxido."],
+  ["p","Potassium is +1 → <span class='f'>KOH</span>. Copper(II) is +2 → <span class='f'>Cu(OH)₂</span>. With two OH we use <b>parentheses</b>.","El potasio es +1 → KOH. El cobre (II) es +2 → Cu(OH)₂. Con dos OH se usan <b>paréntesis</b>."],
+  ["q","Calcium is +2. Calcium hydroxide is…","El calcio es +2. El hidróxido de calcio es…",["CaOH","Ca(OH)₂","Ca₂OH"],1,"+2 needs two OH⁻: <span class='f'>Ca(OH)₂</span>.","El +2 necesita dos OH⁻: Ca(OH)₂."],
+  ["p","<span class='f'>NaOH</span> is <b>caustic soda</b>. Hydroxides are <b>caustic</b>: they can burn your skin.","El NaOH es la <b>soda cáustica</b>. Los hidróxidos son <b>cáusticos</b>: pueden quemar la piel."],
+  ["p","An <b>oxoacid</b> has three elements: hydrogen + a nonmetal + oxygen. Example: <span class='f'>H₂SO₄</span>, sulfuric acid.","Un <b>oxoácido</b> tiene tres elementos: hidrógeno + no metal + oxígeno. Ejemplo: H₂SO₄, ácido sulfúrico."],
+  ["p","The ending tells the number: <b>-ous</b> for the lower one, <b>-ic</b> for the higher one.","La terminación dice el número: <b>-oso</b> para el menor, <b>-ico</b> para el mayor."],
+  ["q","Sulfur is +4 in <span class='f'>H₂SO₃</span> and +6 in <span class='f'>H₂SO₄</span>. H₂SO₃ is…","El azufre es +4 en H₂SO₃ y +6 en H₂SO₄. El H₂SO₃ es…",["sulfuric acid","sulfurous acid"],1,"+4 is the lower → <b>sulfurous acid</b> (ácido sulfuroso).","+4 es el menor → <b>ácido sulfuroso</b> (sulfurous acid)."],
+  ["p","Chlorine, bromine and iodine have four: <b>hypo-…-ous</b> (+1), <b>-ous</b> (+3), <b>-ic</b> (+5), <b>per-…-ic</b> (+7).","Cloro, bromo y iodo tienen cuatro: <b>hipo-…-oso</b> (+1), <b>-oso</b> (+3), <b>-ico</b> (+5), <b>per-…-ico</b> (+7)."],
+  ["q","Find Cl in <span class='f'>HClO₃</span>: (+1) + Cl + 3·(−2) = 0","Calculá el Cl en HClO₃: (+1) + Cl + 3·(−2) = 0",["+3","+5","+6"],1,"1 + Cl − 6 = 0 → Cl = <b>+5</b> → chloric acid (ácido clórico).","1 + Cl − 6 = 0 → Cl = <b>+5</b> → ácido clórico (chloric acid)."],
+  ["q","In <span class='f'>HClO₄</span> chlorine is +7. Its name is…","En HClO₄ el cloro es +7. Su nombre es…",["chloric acid","perchloric acid","hypochlorous acid"],1,"+7 → <b>per-…-ic</b>: perchloric acid (ácido perclórico).","+7 → <b>per-…-ico</b>: ácido perclórico (perchloric acid)."]]},
+ {id:"l5",c:"--t-oxosal",en:"Oxosalts, hydrogen salts & ammonium",es:"Oxosales, hidrogenosales y amonio",s:[
+  ["p","When an oxoacid loses its hydrogens, we get an <b>oxoanion</b>. <span class='f'>H₂SO₄</span> loses 2 H → <span class='f'>SO₄²⁻</span>, sulfate.","Cuando un oxoácido pierde sus hidrógenos queda un <b>oxoanión</b>. H₂SO₄ pierde 2 H → SO₄²⁻, sulfato."],
+  ["p","The ending changes: <b>-ous → -ite</b> and <b>-ic → -ate</b>. Spanish does the same: -oso → -ito, -ico → -ato.","Cambia la terminación: <b>-ous → -ite</b> y <b>-ic → -ate</b>. En castellano igual: -oso → -ito, -ico → -ato."],
+  ["q","Nitric acid, <span class='f'>HNO₃</span>, loses its H. The anion is…","El ácido nítrico, HNO₃, pierde su H. El anión es…",["nitrite","nitrate","nitride"],1,"-ic → <b>-ate</b>: nitrate (nitrato).","-ico → <b>-ato</b>: nitrato (nitrate)."],
+  ["p","An <b>oxosalt</b> is a metal + an oxoanion. Example: <span class='f'>Fe(NO₃)₃</span>, iron(III) nitrate or ferric nitrate.","Una <b>oxosal</b> es metal + oxoanión. Ejemplo: Fe(NO₃)₃, nitrato de hierro (III) o nitrato férrico."],
+  ["q","Calcium (+2) + phosphate (<span class='f'>PO₄³⁻</span>). The formula is…","Calcio (+2) + fosfato (PO₄³⁻). La fórmula es…",["CaPO₄","Ca₃(PO₄)₂","Ca₂(PO₄)₃"],1,"Cross 2 and 3: <span class='f'>Ca₃(PO₄)₂</span>. 3·(+2) + 2·(−3) = 0 ✔","Se cruzan 2 y 3: Ca₃(PO₄)₂. 3·(+2) + 2·(−3) = 0 ✔"],
+  ["p","A <b>hydrogen salt</b> has the <span class='f'>HS⁻</span> anion: <span class='f'>NaHS</span> is sodium hydrogen sulfide.","Una <b>hidrogenosal</b> tiene el anión HS⁻: NaHS es el hidrogenosulfuro de sodio."],
+  ["p","<b>Ammonium salts</b> have <span class='f'>NH₄⁺</span> instead of a metal: <span class='f'>NH₄Cl</span> is ammonium chloride.","Las <b>sales de amonio</b> tienen NH₄⁺ en lugar de un metal: NH₄Cl es el cloruro de amonio."],
+  ["q","<span class='f'>(NH₄)₂S</span> is…","El (NH₄)₂S es…",["ammonium sulfate","ammonium sulfide","ammonia sulfur"],1,"S alone → <b>-ide</b>: ammonium sulfide (sulfuro de amonio). Sulfate would be SO₄.","S solo → <b>-ide</b>: sulfuro de amonio (ammonium sulfide). Sulfato sería SO₄."],
+  ["q","Nitr<b>ide</b>, nitr<b>ite</b>, nitr<b>ate</b>. Which ending has <b>no oxygen</b>?","Nitruro, nitrito, nitrato. ¿Qué terminación <b>no tiene oxígeno</b>?",["-ide","-ite","-ate"],0,"<b>-ide</b> = only the nonmetal (binary). -ite and -ate carry oxygen.","<b>-ide</b> = solo el no metal (binario). -ite y -ate llevan oxígeno."]]}
+];
+let subModo="toque";try{subModo=localStorage.getItem("chemlab-sub")||"toque"}catch(e){}
+const plano=h=>h.replace(/<[^>]+>/g,"").replace(/·/g," times ").replace(/−/g," minus ").replace(/₂/g,"2").replace(/₃/g,"3").replace(/₄/g,"4").replace(/[⁺⁻²³]/g,"").replace(/"/g,"");
+function lecciones(){const hechas=est.lecs||{};
+  vista.innerHTML=`<h2>Lessons <span class="en" style="font-size:1rem;font-weight:400">Lecciones en inglés, con subtítulos</span></h2>
+  <p>Short steps in English. Tap <b>ES</b> if you need the Spanish subtitle. Answer the questions to keep going.</p>
+  <p class="dato">Pasos cortos en inglés. Tocá <b>ES</b> si necesitás el subtítulo. Contestá las preguntas para avanzar.</p>
+  <div class="lecs">${LECS.map((l,i)=>`<button class="lec" style="--c:var(${l.c})" data-lec="${i}"><small>Lesson ${i+1} · ${l.s.filter(x=>x[0]==="q").length} questions</small><b>${l.en}</b><span class="dato">${l.es}</span><small>${hechas[l.id]?"✔ Done · "+hechas[l.id]+" XP":"Not started"}</small></button>`).join("")}</div>`;
+  vista.querySelectorAll("[data-lec]").forEach(b=>b.onclick=()=>leccion(+b.dataset.lec))}
+function leccion(i){const L=LECS[i];let k=0,ganado=0;
+  vista.innerHTML=`<div class="fila"><h2 style="color:var(${L.c})">${L.en}</h2><button class="btn sec" id="volver">← All lessons</button></div>
+   <div class="fila"><div class="prog" id="lprog" style="flex:1;min-width:200px">${L.s.map(()=>"<i></i>").join("")}</div>
+   <div class="sub-sel"><span>Subtítulos:</span>${[["toque","al tocar ES"],["siempre","siempre"],["nunca","nunca"]].map(([v,t])=>`<button data-sub="${v}" aria-pressed="${subModo===v}">${t}</button>`).join("")}</div></div>
+   <div class="hilo" id="hilo"></div><div class="acciones" style="justify-content:flex-start" id="lacc"></div>`;
+  document.getElementById("volver").onclick=lecciones;
+  vista.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>{subModo=b.dataset.sub;try{localStorage.setItem("chemlab-sub",subModo)}catch(e){}
+    vista.querySelectorAll("[data-sub]").forEach(x=>x.setAttribute("aria-pressed",x===b));vista.querySelectorAll(".es-t").forEach(e=>e.hidden=subModo!=="siempre")});
+  const hilo=document.getElementById("hilo"),acc=document.getElementById("lacc");
+  const mini=(en,idx)=>`<div class="mini"><button data-voz="${plano(en)}">▶ listen</button><button data-es="${idx}">ES</button></div>`;
+  hilo.onclick=e=>{const b=e.target.closest("[data-es]");if(b){const t=document.getElementById("es"+b.dataset.es);if(t)t.hidden=!t.hidden}};
+  const sigue=()=>{acc.innerHTML=`<button class="btn" id="cont">Continue →</button>`;const c=document.getElementById("cont");c.onclick=paso;c.focus({preventScroll:true})};
+  const paso=()=>{const pr=document.querySelectorAll("#lprog i");if(k>=L.s.length){
+      est.lecs=est.lecs||{};const prev=est.lecs[L.id]||0;est.lecs[L.id]=Math.max(prev,ganado);sumar(prev?0:20,prev?"Lesson done":"Lesson complete! +20 XP");
+      acc.innerHTML=`<div class="card" style="width:100%"><h3>Lesson complete! 🎉 <span class="dato">¡Lección terminada!</span></h3><p>${ganado} XP in this lesson.</p><div class="acciones" style="justify-content:flex-start">${i<LECS.length-1?`<button class="btn" id="nextL">Next lesson →</button>`:""}<button class="btn sec" id="toL">All lessons</button></div></div>`;
+      document.getElementById("toL").onclick=lecciones;const n=document.getElementById("nextL");if(n){n.onclick=()=>leccion(i+1);n.focus()}return}
+    const s=L.s[k],idx=`${i}_${k}`,ver=subModo==="siempre"?"":"hidden";pr[k].classList.add("ya");
+    const d=document.createElement("div");
+    if(s[0]==="p"){d.className="paso";d.innerHTML=`<div class="en-t">${s[1]}</div><div class="es-t" id="es${idx}" ${ver}>${s[2]}</div>${mini(s[1],idx)}`;
+      hilo.appendChild(d);pr[k].classList.replace("ya","ok");k++;sigue();d.scrollIntoView({behavior:"smooth",block:"nearest"})}
+    else{const [,qen,qes,ops,ok,wen,wes]=s;d.className="paso q";
+      d.innerHTML=`<div class="en-t"><b>Quick check:</b> ${qen}</div><div class="es-t" id="es${idx}" ${ver}>${qes}</div>${mini(qen,idx)}
+        <div class="opciones">${ops.map((o,j)=>`<button class="opcion" data-j="${j}">${o}</button>`).join("")}</div><div class="fb"></div>`;
+      hilo.appendChild(d);acc.innerHTML="";d.scrollIntoView({behavior:"smooth",block:"nearest"});let intento=0;
+      d.querySelectorAll(".opcion").forEach(b=>b.onclick=()=>{const j=+b.dataset.j;intento++;
+        if(j===ok){d.querySelectorAll(".opcion").forEach(x=>x.disabled=true);b.classList.add("ok");const xp=intento===1?10:4;ganado+=xp;est.racha=intento===1?est.racha+1:0;sumar(xp,`+${xp} XP`);
+          pr[k].classList.replace("ya",intento===1?"ok":"mal");
+          d.querySelector(".fb").innerHTML=`<div class="feedback"><b>${intento===1?"Correct!":"Got it!"}</b> ${wen}<div class="es-t" style="margin-top:6px" id="esw${idx}" ${ver}>${wes}</div><div class="mini" style="margin-top:6px"><button data-es="w${idx}">ES</button></div></div>`;
+          k++;sigue()}
+        else{b.classList.add("mal");b.disabled=true;est.racha=0;guardar();pintarNivel();
+          d.querySelector(".fb").innerHTML=`<div class="feedback">Not quite, try again! <span class="dato">Casi, probá de nuevo.</span></div>`}})}};
+  paso()}
+
+
+/* ================= ENGLISH CLASS (GCSE) + LUMINOL ================= */
+LECS.forEach(l=>l.g="quimica");
+LECS.push(
+ {id:"e1",g:"ingles",c:"--t-salbin",en:"Ionic compounds",es:"Compuestos iónicos",s:[
+  ["p","Metals <b>lose</b> electrons. Nonmetals <b>gain</b> electrons.","Los metales <b>pierden</b> electrones. Los no metales <b>ganan</b> electrones."],
+  ["p","Sodium gives one electron to chlorine. Sodium becomes <span class='f'>Na⁺</span> and chlorine becomes <span class='f'>Cl⁻</span>.","El sodio le da un electrón al cloro. El sodio queda Na⁺ y el cloro Cl⁻."],
+  ["p","Atoms with a charge are called <b>ions</b>. A positive ion is a <b>cation</b>. A negative ion is an <b>anion</b>.","Los átomos con carga se llaman <b>iones</b>. Un ion positivo es un <b>catión</b>; uno negativo, un <b>anión</b>."],
+  ["q","Magnesium is a metal. It will…","El magnesio es un metal. Va a…",["gain electrons","lose electrons","share electrons"],1,"Metals <b>lose</b> electrons and become positive ions: Mg²⁺.","Los metales <b>pierden</b> electrones y quedan iones positivos: Mg²⁺."],
+  ["p","Opposite charges <b>attract</b>. This strong attraction is the <b>ionic bond</b>.","Las cargas opuestas se <b>atraen</b>. Esa atracción fuerte es el <b>enlace iónico</b>."],
+  ["p","The ions make a <b>giant lattice</b>: a big regular structure. Look at NaCl in the Lab 3D!","Los iones forman una <b>red gigante</b>: una estructura grande y ordenada. ¡Mirá el NaCl en el Lab 3D!"],
+  ["p","Ionic compounds have <b>high melting points</b>. They conduct electricity when <b>melted or dissolved</b> in water.","Los compuestos iónicos tienen <b>puntos de fusión altos</b>. Conducen la electricidad <b>fundidos o disueltos</b> en agua."],
+  ["q","Why do ionic compounds have high melting points?","¿Por qué los compuestos iónicos tienen puntos de fusión altos?",["The ionic bonds are strong","The ions are very small","They have no charge"],0,"Breaking many <b>strong</b> ionic bonds needs a lot of energy.","Romper muchos enlaces iónicos <b>fuertes</b> necesita mucha energía."],
+  ["q","Solid NaCl does not conduct electricity. Dissolved in water, it…","El NaCl sólido no conduce. Disuelto en agua…",["conducts","does not conduct"],0,"In water the ions can <b>move</b>, so it conducts.","En agua los iones se pueden <b>mover</b>, entonces conduce."]]},
+ {id:"e2",g:"ingles",c:"--t-hidruro",en:"Covalent bonding",es:"Enlace covalente",s:[
+  ["p","Nonmetal atoms <b>share</b> electrons. A shared pair of electrons is a <b>covalent bond</b>.","Los átomos no metálicos <b>comparten</b> electrones. Un par compartido de electrones es un <b>enlace covalente</b>."],
+  ["p","Hydrogen, <span class='f'>H₂</span>: two H atoms share one pair. That is a <b>single bond</b>.","Hidrógeno, H₂: dos átomos de H comparten un par. Es un <b>enlace simple</b>."],
+  ["q","Ionic or covalent? Two nonmetals, like H and Cl in <span class='f'>HCl</span>…","¿Iónico o covalente? Dos no metales, como H y Cl en HCl…",["ionic","covalent"],1,"Nonmetal + nonmetal → they <b>share</b> electrons → covalent.","No metal + no metal → <b>comparten</b> electrones → covalente."],
+  ["p","Water, <span class='f'>H₂O</span>, has two covalent bonds. Methane, <span class='f'>CH₄</span>, has four.","El agua, H₂O, tiene dos enlaces covalentes. El metano, CH₄, tiene cuatro."],
+  ["p","Sometimes atoms share two pairs: a <b>double bond</b>. Oxygen, <span class='f'>O₂</span>, has a double bond.","A veces comparten dos pares: un <b>enlace doble</b>. El oxígeno, O₂, tiene un enlace doble."],
+  ["p","Small molecules have <b>low melting and boiling points</b>. Many are gases or liquids. They <b>do not conduct</b> electricity.","Las moléculas chicas tienen <b>puntos de fusión y ebullición bajos</b>. Muchas son gases o líquidos. <b>No conducen</b> la electricidad."],
+  ["q","How many covalent bonds are in <span class='f'>CH₄</span>?","¿Cuántos enlaces covalentes tiene el CH₄?",["1","2","4"],2,"Carbon shares one pair with each of the <b>4</b> hydrogens.","El carbono comparte un par con cada uno de los <b>4</b> hidrógenos."],
+  ["q","Ionic bond = electrons are… Covalent bond = electrons are…","Enlace iónico = los electrones se… Enlace covalente = los electrones se…",["given / shared","shared / given"],0,"Ionic: <b>given</b> (transferred). Covalent: <b>shared</b>.","Iónico: se <b>dan</b> (transfieren). Covalente: se <b>comparten</b>."]]},
+ {id:"e3",g:"ingles",c:"--t-oxido",en:"Introduction to moles",es:"Introducción a los moles",s:[
+  ["p","Atoms are too small to count one by one. Chemists count them in <b>moles</b>.","Los átomos son demasiado chicos para contarlos de a uno. Los químicos los cuentan en <b>moles</b>."],
+  ["p","One <b>mole</b> is 6.02 × 10²³ particles. This number is the <b>Avogadro constant</b>.","Un <b>mol</b> son 6,02 × 10²³ partículas. Ese número es la <b>constante de Avogadro</b>."],
+  ["p","It is like a <b>dozen</b>: a dozen eggs is 12 eggs. A mole of atoms is 6.02 × 10²³ atoms.","Es como una <b>docena</b>: una docena de huevos son 12. Un mol de átomos son 6,02 × 10²³ átomos."],
+  ["q","One mole of water molecules has…","Un mol de moléculas de agua tiene…",["12 molecules","6.02 × 10²³ molecules","18 molecules"],1,"Always <b>6.02 × 10²³</b>, for any substance.","Siempre <b>6,02 × 10²³</b>, para cualquier sustancia."],
+  ["p","The <b>relative formula mass</b> (Mr) is the sum of the atomic masses. H = 1, O = 16, so <span class='f'>H₂O</span> = 1 + 1 + 16 = <b>18</b>.","La <b>masa fórmula relativa</b> (Mr) es la suma de las masas atómicas. H = 1, O = 16, entonces H₂O = 1 + 1 + 16 = <b>18</b>."],
+  ["p","One mole of a substance weighs its Mr in <b>grams</b>. One mole of water = <b>18 g</b>.","Un mol de una sustancia pesa su Mr en <b>gramos</b>. Un mol de agua = <b>18 g</b>."],
+  ["q","C = 12 and O = 16. What is the Mr of <span class='f'>CO₂</span>?","C = 12 y O = 16. ¿Cuál es el Mr del CO₂?",["28","44","32"],1,"12 + 16 + 16 = <b>44</b>.","12 + 16 + 16 = <b>44</b>."],
+  ["p","Formula: <b>mass = moles × Mr</b>.","Fórmula: <b>masa = moles × Mr</b>."],
+  ["q","What is the mass of 2 moles of water (Mr = 18)?","¿Cuánto pesan 2 moles de agua (Mr = 18)?",["9 g","20 g","36 g"],2,"2 × 18 = <b>36 g</b>.","2 × 18 = <b>36 g</b>."]]},
+ {id:"e4",g:"ingles",c:"--t-oxoacido",en:"Balancing equations",es:"Balanceo de ecuaciones",s:[
+  ["p","In a reaction, atoms are <b>not created or destroyed</b>. They only change partners.","En una reacción los átomos <b>no se crean ni se destruyen</b>. Solo cambian de pareja."],
+  ["p","So we need the <b>same number of each atom</b> on both sides of the arrow.","Por eso necesitamos la <b>misma cantidad de cada átomo</b> de los dos lados de la flecha."],
+  ["p","Look: <span class='f'>H₂ + O₂ → H₂O</span>. Left: 2 O. Right: 1 O. It is <b>not balanced</b>.","Mirá: H₂ + O₂ → H₂O. Izquierda: 2 O. Derecha: 1 O. <b>No está balanceada</b>."],
+  ["p","We add <b>big numbers in front</b> (coefficients): <span class='f'>2H₂ + O₂ → 2H₂O</span>. Now 4 H and 2 O on each side ✔","Agregamos <b>números grandes adelante</b> (coeficientes): 2H₂ + O₂ → 2H₂O. Ahora hay 4 H y 2 O de cada lado ✔"],
+  ["p","<b>Never change the small numbers</b> (subscripts). That would change the substance!","<b>Nunca cambies los números chiquitos</b> (subíndices). ¡Eso cambiaría la sustancia!"],
+  ["q","To balance an equation, you can change…","Para balancear una ecuación podés cambiar…",["the big numbers in front","the small numbers (subscripts)"],0,"Only the <b>coefficients</b>. H₂O must stay H₂O.","Solo los <b>coeficientes</b>. El H₂O tiene que seguir siendo H₂O."],
+  ["q","<span class='f'>__Mg + O₂ → 2MgO</span>. What number goes in front of Mg?","__Mg + O₂ → 2MgO. ¿Qué número va delante del Mg?",["1","2","4"],1,"Right side has 2 Mg, so <b>2Mg</b>: 2Mg + O₂ → 2MgO ✔","Del lado derecho hay 2 Mg, entonces <b>2Mg</b>: 2Mg + O₂ → 2MgO ✔"],
+  ["q","Is <span class='f'>N₂ + 3H₂ → 2NH₃</span> balanced?","¿Está balanceada N₂ + 3H₂ → 2NH₃?",["Yes","No"],0,"Left: 2 N, 6 H. Right: 2 N, 6 H ✔ <b>Yes</b>.","Izquierda: 2 N, 6 H. Derecha: 2 N, 6 H ✔ <b>Sí</b>."]]}
+);
+// luminol: guion de la exposición
+// [EN, ES, tiempo de la voz pasiva (si la oración es pasiva)]
+const GUION=[
+ ["Hello! My name is ___. Today I am going to describe a compound: <b>luminol</b>.","¡Hola! Me llamo ___. Hoy voy a describir un compuesto: el <b>luminol</b>."],
+ ["Luminol is an <b>organic compound</b>. Its formula is <span class='f'>C₈H₇N₃O₂</span>. It is a white or pale yellow <b>powder</b>.","El luminol es un <b>compuesto orgánico</b>. Su fórmula es C₈H₇N₃O₂. Es un <b>polvo</b> blanco o amarillo pálido."],
+ ["When luminol <b>reacts</b> with hydrogen peroxide, it makes a <b>blue light</b>. This is called <b>chemiluminescence</b>.","Cuando el luminol <b>reacciona</b> con agua oxigenada, produce una <b>luz azul</b>. Esto se llama <b>quimioluminiscencia</b>."],
+ ["Its blue glow <u>was discovered</u> in 1928.","Su brillo azul <u>fue descubierto</u> en 1928.","Past simple"],
+ ["Blood has <b>iron</b>. The iron makes the reaction faster. So luminol <b>glows</b> blue where there is blood.","La sangre tiene <b>hierro</b>. El hierro acelera la reacción. Por eso el luminol <b>brilla</b> azul donde hay sangre."],
+ ["Luminol <u>is used</u> by forensic scientists at <b>crime scenes</b>.","El luminol <u>es usado</u> por científicos forenses en la <b>escena del crimen</b>.","Present simple"],
+ ["Very small traces of blood <u>can be found</u>, even after someone cleans the place.","Se <u>pueden encontrar</u> rastros muy pequeños de sangre, incluso después de que alguien limpió.","Can be"],
+ ["In a dark room, the blue light <u>will be seen</u> very clearly.","En un cuarto oscuro, la luz azul <u>se va a ver</u> muy claramente.","Will be"],
+ ["Many crimes <u>have been solved</u> with its help.","Muchos crímenes <u>han sido resueltos</u> con su ayuda.","Present perfect"],
+ ["But be careful: <b>bleach</b> and copper can also make it glow. So scientists need <b>more tests</b>.","Pero ojo: la <b>lavandina</b> y el cobre también lo hacen brillar. Por eso los científicos necesitan <b>más pruebas</b>."],
+ ["Luminol shows that chemistry can help to <b>solve crimes</b>. Thank you! Any questions?","El luminol muestra que la química ayuda a <b>resolver crímenes</b>. ¡Gracias! ¿Alguna pregunta?"]
+];
+LECS.push({id:"e5",g:"ingles",c:"--t-hidracido",en:"Passive voice (for your compound card)",es:"Voz pasiva (para tu compound card)",s:[
+  ["p","<b>Active:</b> Scientists <b>use</b> luminol. <b>Passive:</b> Luminol <b>is used</b> by scientists.","<b>Activa:</b> Los científicos usan luminol. <b>Pasiva:</b> El luminol es usado por los científicos."],
+  ["p","In the passive, the <b>thing</b> is the important part, not the person who does the action.","En la pasiva lo importante es la <b>cosa</b>, no la persona que hace la acción."],
+  ["p","Passive = <b>be</b> + <b>past participle</b> (used, found, discovered, seen, solved).","Pasiva = <b>be</b> + <b>participio pasado</b> (used, found, discovered, seen, solved)."],
+  ["p","Only <b>be</b> changes with the tense: <b>is</b> used · <b>was</b> used · <b>has been</b> used · <b>will be</b> used · <b>can be</b> used.","Solo cambia <b>be</b> según el tiempo: is used (presente) · was used (pasado) · has been used (presente perfecto) · will be used (futuro) · can be used (puede ser)."],
+  ["q","Present: Luminol ___ by forensic scientists.","Presente: El luminol ___ por científicos forenses.",["uses","is used","using"],1,"be (is) + past participle (used) → <b>is used</b>.","be (is) + participio (used) → <b>is used</b>."],
+  ["q","Past: Its glow ___ in 1928.","Pasado: Su brillo ___ en 1928.",["is discovered","was discovered","will discover"],1,"Past of be = <b>was</b> → was discovered.","Pasado de be = <b>was</b> → was discovered."],
+  ["q","Present perfect: Many crimes ___ with luminol.","Presente perfecto: Muchos crímenes ___ con luminol.",["have been solved","have solved","were solve"],0,"have + been + solved → <b>have been solved</b>.","have + been + solved → <b>have been solved</b>."],
+  ["q","Traces of blood ___ found, even after cleaning.","Rastros de sangre ___ encontrados, incluso después de limpiar.",["can","can be","can been"],1,"<b>can be</b> + participle: can be found.","<b>can be</b> + participio: can be found."],
+  ["q","Which sentence is passive?","¿Qué oración está en voz pasiva?",["The scientist sprays luminol.","Luminol is sprayed by the scientist."],1,"<b>is sprayed</b> = be + past participle → passive.","<b>is sprayed</b> = be + participio → pasiva."]]});
+const VOCAB=[["luminol","luminol"],["glow","brillar / brillo"],["blue light","luz azul"],["powder","polvo"],["hydrogen peroxide","agua oxigenada (H₂O₂)"],["reaction","reacción"],["chemiluminescence","quimioluminiscencia"],["blood","sangre"],["iron","hierro"],["forensic scientist","científico forense"],["crime scene","escena del crimen"],["spray","rociar"],["traces","rastros"],["bleach","lavandina"],["test","prueba"]];
+const PREGS=[
+ ["What color is the light?","¿De qué color es la luz?","It is blue.","Es azul."],
+ ["Why do they use it in the dark?","¿Por qué lo usan a oscuras?","Because the light is weak. We can see it better in the dark.","Porque la luz es débil. Se ve mejor a oscuras."],
+ ["What does luminol react with?","¿Con qué reacciona el luminol?","With hydrogen peroxide. The iron in blood helps the reaction.","Con agua oxigenada. El hierro de la sangre ayuda a la reacción."],
+ ["Who uses luminol?","¿Quién usa el luminol?","Forensic scientists, at crime scenes.","Los científicos forenses, en las escenas del crimen."],
+ ["Is luminol always right?","¿El luminol siempre acierta?","No. Bleach can also make it glow, so they need more tests.","No. La lavandina también lo hace brillar, por eso necesitan más pruebas."]
+];
+function vistaLuminol(){let i=0,t0=null,tim=null;
+  vista.innerHTML=`<h2>My presentation: <span style="color:#3E7BFF">Luminol</span></h2>
+  <p>A very simple talk in English, about 1–2 minutes. Read it, listen to it, then practise with the timer.</p>
+  <p class="dato">Una exposición muy simple en inglés, de 1 a 2 minutos. Leela, escuchala y después practicá con el reloj.</p>
+  <section class="grid2">
+    <div class="card" style="background:#05070F;color:#DCE6FF;border-color:#1B2340;gap:12px">
+      <h3 style="color:#DCE6FF">See the glow · <span style="font-weight:400">Mirá el brillo</span></h3>
+      <div id="escena" style="position:relative;height:200px;border-radius:12px;background:#070A14;overflow:hidden">
+        <span style="position:absolute;left:12px;bottom:10px;font-size:.8rem;color:#56607A">crime scene, in the dark</span></div>
+      <div class="acciones" style="justify-content:flex-start"><button class="btn" id="rociar" style="background:#3E7BFF;color:#fff">Spray luminol</button><button class="btn sec" id="limpiar" style="background:transparent;color:#DCE6FF;border-color:#33405F">Reset</button></div>
+      <p style="font-size:.9rem;color:#9AA7C7">Simulation: the blue spots are where there was blood. · Simulación: las manchas azules son donde había sangre.</p></div>
+    <div class="card"><h3>The molecule · <span style="font-weight:400">La molécula</span></h3>
+      <svg viewBox="0 0 290 220" role="img" aria-label="Estructura simplificada del luminol" style="width:100%;height:auto">
+        <g stroke="var(--ink)" stroke-width="2.2" fill="none">
+          <polygon points="100,60 134.6,80 134.6,120 100,140 65.4,120 65.4,80"/>
+          <line x1="104" y1="70" x2="128" y2="84"/><line x1="128" y1="116" x2="104" y2="130"/><line x1="72" y1="84" x2="72" y2="116"/>
+          <polyline points="134.6,80 169.3,60 197,76"/><polyline points="134.6,120 169.3,140 197,124"/>
+          <line x1="204" y1="91" x2="204" y2="109"/>
+          <line x1="166" y1="60" x2="166" y2="30"/><line x1="172.6" y1="60" x2="172.6" y2="30"/>
+          <line x1="166" y1="140" x2="166" y2="170"/><line x1="172.6" y1="140" x2="172.6" y2="170"/>
+          <line x1="100" y1="140" x2="100" y2="166"/>
+        </g>
+        <g font-family="var(--mono)" font-weight="700" font-size="16" text-anchor="middle">
+          <text x="169.3" y="24" fill="#E5322D">O</text><text x="169.3" y="188" fill="#E5322D">O</text>
+          <text x="212" y="88" fill="#3050F8">NH</text><text x="212" y="124" fill="#3050F8">NH</text>
+          <text x="100" y="184" fill="#3050F8">NH₂</text>
+        </g>
+        <text x="8" y="212" font-size="11" fill="var(--soft)">Simplified · C₈H₇N₃O₂ · corners = carbon atoms</text>
+      </svg>
+      <p class="dato">Cada esquina es un átomo de carbono. Los H de los carbonos no se dibujan.</p></div>
+  </section>
+  <section class="card tipo" style="--c:#3E7BFF;gap:12px">
+    <h3>Compound card (written) · <span style="font-weight:400">La ficha escrita</span></h3>
+    <div class="scroll"><table class="puente">
+      <tr><td><b>Name</b></td><td>Luminol</td></tr>
+      <tr><td><b>Formula</b></td><td class="f">C₈H₇N₃O₂</td></tr>
+      <tr><td><b>Type</b></td><td>Organic compound (it has carbon and hydrogen) · covalent bonds</td></tr>
+      <tr><td><b>Appearance</b></td><td>White or pale yellow powder</td></tr>
+      <tr><td><b>Reacts with</b></td><td>Hydrogen peroxide (H₂O₂), in a basic solution. Iron in blood makes it faster.</td></tr>
+      <tr><td><b>Special property</b></td><td>Chemiluminescence: it glows blue</td></tr>
+      <tr><td><b>Uses</b></td><td>Forensic science: to find traces of blood at crime scenes</td></tr>
+      <tr><td><b>Safety</b></td><td>Wear gloves and goggles. Bleach and copper also make it glow.</td></tr>
+    </table></div>
+    <h3 style="margin-top:6px">Passive voice sentences · <span style="font-weight:400">Las 5 oraciones en voz pasiva</span></h3>
+    <div class="ej">${GUION.filter(g=>g[2]).map(([en,es,t])=>`<span class="chip" style="--c:#3E7BFF">${t}</span><span>${en}${voz(plano(en))}<br><span class="dato">${es}</span></span>`).join("")}</div>
+    <p class="dato">La consigna pide al menos 2 a 4 oraciones en voz pasiva: acá hay una de cada tiempo (present, past, present perfect, will be, can be).</p>
+  </section>
+  <section class="card" style="gap:14px">
+    <div class="fila"><h3>Your script (oral) · <span style="font-weight:400">Tu guion para decirlo</span></h3><span class="dato" id="cnt"></span></div>
+    <div id="tarjeta" class="paso" style="min-height:150px;align-content:center"></div>
+    <div class="acciones" style="justify-content:flex-start">
+      <button class="btn sec" id="ant">← Back</button><button class="btn" id="sigG">Next →</button>
+      <button class="btn sec" id="oirG">▶ Listen (slow)</button><button class="btn sec" id="esG">ES</button>
+      <button class="btn sec" id="relo">⏱ Practice with timer</button><span id="crono" class="f" style="align-self:center;font-size:1.2rem"></span></div>
+  </section>
+  <section class="grid2">
+    <div class="card"><h3>Key words · <span style="font-weight:400">Palabras clave</span></h3>
+      <div class="ej">${VOCAB.map(([e,s])=>`<span><b>${e}</b>${voz(e)}</span><span class="dato">${s}</span>`).join("")}</div></div>
+    <div class="card"><h3>Questions the teacher may ask · <span style="font-weight:400">Preguntas posibles</span></h3>
+      ${PREGS.map(([q,qe,a,ae])=>`<details style="border-top:1px solid var(--line);padding-top:8px"><summary style="cursor:pointer;font-weight:700">${q} <span class="dato" style="font-weight:400">· ${qe}</span></summary><p style="margin-top:6px">${a} ${voz(a)}</p><p class="dato">${ae}</p></details>`).join("")}</div>
+  </section>
+  <section class="card"><h3>Connect it with your chemistry · <span style="font-weight:400">Conectalo con tu temario</span></h3>
+    <p><b>H₂O₂</b> (hydrogen peroxide, agua oxigenada): es un <b>peróxido</b>, la excepción de la regla 4: ahí el oxígeno trabaja con <b>−1</b>, no con −2.</p>
+    <p><b>NaOH</b> (sodium hydroxide): el luminol se prepara en un medio <b>básico</b>, por ejemplo con un <b>hidróxido</b>.</p>
+    <p><b>Fe</b> (iron): el hierro de la hemoglobina acelera la reacción (es un <b>catalizador</b>, <i>catalyst</i>).</p>
+    <p><b>Covalent:</b> la molécula de luminol tiene solo no metales (C, H, N, O): sus enlaces son <b>covalentes</b>.</p></section>`;
+  const pintar=()=>{const [en,es,t]=GUION[i];document.getElementById("tarjeta").innerHTML=`${t?`<span class="chip" style="--c:#3E7BFF;justify-self:start">Passive · ${t}</span>`:""}<div class="en-t" style="font-size:1.4rem">${en}</div><div class="es-t" id="esL" ${subModo==="siempre"?"":"hidden"}>${es}</div>`;
+    document.getElementById("cnt").textContent=`Card ${i+1} of ${GUION.length}`;document.getElementById("ant").disabled=i===0;
+    document.getElementById("sigG").textContent=i<GUION.length-1?"Next →":"Finish ✔"};
+  document.getElementById("ant").onclick=()=>{if(i>0){i--;pintar()}};
+  document.getElementById("sigG").onclick=()=>{if(i<GUION.length-1){i++;pintar()}else{clearInterval(tim);const s=t0?Math.round((Date.now()-t0)/1000):0;t0=null;
+    if(!est.hechos.luminol){est.hechos.luminol=1;sumar(25,"Presentation done! +25 XP")}else toast(s?`Great! ${s} seconds`:"Great!");i=0;pintar()}};
+  document.getElementById("oirG").onclick=()=>{try{const u=new SpeechSynthesisUtterance(plano(GUION[i][0]).replace("___","your name"));u.lang="en-US";u.rate=.75;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){toast("Este navegador no tiene voz")}};
+  document.getElementById("esG").onclick=()=>{const t=document.getElementById("esL");t.hidden=!t.hidden};
+  document.getElementById("relo").onclick=()=>{i=0;pintar();t0=Date.now();clearInterval(tim);const c=document.getElementById("crono");
+    tim=setInterval(()=>{if(!document.getElementById("crono")){clearInterval(tim);return}const s=Math.round((Date.now()-t0)/1000);c.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`},500)};
+  const esc=document.getElementById("escena");
+  document.getElementById("rociar").onclick=()=>{for(let k=0;k<7;k++){const d=document.createElement("i");const x=10+Math.random()*80,y=10+Math.random()*75,r=14+Math.random()*30;
+      d.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${r}px;height:${r*.7}px;border-radius:50%;background:radial-gradient(circle,#9FC2FF 0%,#3E7BFF 40%,rgba(62,123,255,0) 72%);filter:blur(1px);opacity:0;transition:opacity 1.2s;box-shadow:0 0 24px 8px rgba(62,123,255,.45)`;
+      esc.appendChild(d);setTimeout(()=>d.style.opacity="1",60+k*120);setTimeout(()=>d.style.opacity="0",4500+k*150)}};
+  document.getElementById("limpiar").onclick=()=>esc.querySelectorAll("i").forEach(x=>x.remove());
+  pintar()}
+// lista de lecciones agrupada (reemplaza la anterior: la última declaración gana)
+function lecciones(){const hechas=est.lecs||{};
+  const tarjeta=(l,i)=>`<button class="lec" style="--c:var(${l.c})" data-lec="${i}"><small>${l.s.filter(x=>x[0]==="q").length} questions</small><b>${l.en}</b><span class="dato">${l.es}</span><small>${hechas[l.id]?"✔ Done · "+hechas[l.id]+" XP":"Not started"}</small></button>`;
+  const grupo=(g,t,te)=>`<h3 style="margin-top:8px">${t} <span class="dato" style="font-weight:400">· ${te}</span></h3><div class="lecs">${LECS.map((l,i)=>l.g===g?tarjeta(l,i):"").join("")}</div>`;
+  vista.innerHTML=`<h2>Lessons <span class="en" style="font-size:1rem;font-weight:400">Lecciones en inglés, con subtítulos</span></h2>
+  <p>Short steps in English. Tap <b>ES</b> if you need the Spanish subtitle. Answer the questions to keep going.</p>
+  <p class="dato">Pasos cortos en inglés. Tocá <b>ES</b> si necesitás el subtítulo. Contestá las preguntas para avanzar.</p>
+  ${grupo("ingles","English class","Inglés técnico (videos de Classroom + compound card)")}
+  ${grupo("quimica","Chemistry class","Química: compuestos inorgánicos, hasta la pág. 32")}
+  <div class="card tipo" style="--c:#3E7BFF;margin-top:6px"><div class="fila"><b>Luminol: compound card + oral presentation</b><button class="btn" data-ir="lum">Open →</button></div></div>`;
+  vista.querySelectorAll("[data-lec]").forEach(b=>b.onclick=()=>leccion(+b.dataset.lec))}
+
+
+/* ================= MATERIAL NUEVO DE CLASSROOM: IONES, DOT & CROSS, LAB EQUIPMENT ================= */
+LECS.push(
+ {id:"e6",g:"ingles",c:"--t-salbin",en:"Formation of ions",es:"Formación de iones",s:[
+  ["p","An <b>ion</b> is a charged particle. It can be one atom (<span class='f'>Cl⁻</span>) or a group of atoms (<span class='f'>NO₃⁻</span>).","Un <b>ion</b> es una partícula con carga. Puede ser un átomo (Cl⁻) o un grupo de átomos (NO₃⁻)."],
+  ["p","Atoms lose or gain electrons to get a <b>full outer shell</b>, like a <b>noble gas</b>. A full outer shell is very <b>stable</b>.","Los átomos pierden o ganan electrones para tener la <b>última capa completa</b>, como un <b>gas noble</b>. Eso es muy <b>estable</b>."],
+  ["q","Why do ions often have the same electron structure as a noble gas?","¿Por qué los iones suelen tener la misma estructura electrónica que un gas noble?",["Because a full outer shell is stable","Because noble gases are metals","Because they lose all their electrons"],0,"Atoms want a <b>full outer shell</b>: it is the most stable structure.","Los átomos buscan la <b>última capa completa</b>: es la estructura más estable."],
+  ["p","<b>Metals lose</b> electrons → <b>positive ions</b> (cations). <b>Non-metals gain</b> electrons → <b>negative ions</b> (anions).","<b>Los metales pierden</b> electrones → <b>iones positivos</b> (cationes). <b>Los no metales ganan</b> → <b>iones negativos</b> (aniones)."],
+  ["p","The charge = the number of electrons lost or gained. Lose 2 → <b>2+</b>. Gain 3 → <b>3−</b>.","La carga = la cantidad de electrones perdidos o ganados. Pierde 2 → <b>2+</b>. Gana 3 → <b>3−</b>."],
+  ["p","Use the periodic table! <b>Group 1 → 1+</b>, <b>Group 2 → 2+</b>, <b>Group 6 → 2−</b>, <b>Group 7 → 1−</b>.","¡Usá la tabla periódica! <b>Grupo 1 → 1+</b>, <b>Grupo 2 → 2+</b>, <b>Grupo 6 → 2−</b>, <b>Grupo 7 → 1−</b>."],
+  ["q","Bromine (Br) is in Group 7. Its ion is…","El bromo (Br) está en el grupo 7. Su ion es…",["Br⁺","Br⁻","Br²⁻"],1,"Group 7 gains 1 electron → <b>Br⁻</b> (bromide).","El grupo 7 gana 1 electrón → <b>Br⁻</b> (bromuro)."],
+  ["q","Calcium (Ca) is in Group 2. Its ion is…","El calcio (Ca) está en el grupo 2. Su ion es…",["Ca²⁺","Ca²⁻","Ca⁺"],0,"Group 2 loses 2 electrons → <b>Ca²⁺</b>.","El grupo 2 pierde 2 electrones → <b>Ca²⁺</b>."],
+  ["q","Potassium (K) is in Group 1. Its ion is…","El potasio (K) está en el grupo 1. Su ion es…",["K⁻","K²⁺","K⁺"],2,"Group 1 loses 1 electron → <b>K⁺</b>.","El grupo 1 pierde 1 electrón → <b>K⁺</b>."],
+  ["p","Connect it with your chemistry class: the ion charge is the <b>oxidation number</b>! Na⁺ → +1, O²⁻ → −2.","Conectalo con química: ¡la carga del ion es el <b>número de oxidación</b>! Na⁺ → +1, O²⁻ → −2."]]},
+ {id:"e7",g:"ingles",c:"--t-salbin",en:"Ionic bonding: dot and cross",es:"Enlace iónico: puntos y cruces",s:[
+  ["p","When a <b>metal</b> and a <b>non-metal</b> react, the metal <b>transfers</b> electrons to the non-metal.","Cuando reaccionan un <b>metal</b> y un <b>no metal</b>, el metal le <b>transfiere</b> electrones al no metal."],
+  ["p","The ions have opposite charges, so they are strongly attracted by <b>electrostatic forces</b>. That is the <b>ionic bond</b>.","Los iones tienen cargas opuestas y se atraen con <b>fuerzas electrostáticas</b>. Ese es el <b>enlace iónico</b>."],
+  ["p","A <b>dot and cross diagram</b> shows the electrons: dots for one atom, crosses for the other. You can see where each electron came from.","Un <b>diagrama de puntos y cruces</b> muestra los electrones: puntos para un átomo, cruces para el otro. Se ve de dónde vino cada electrón."],
+  ["p","Try it in the <b>Dot &amp; cross</b> tab: press <b>Transfer</b> and watch the electrons move!","Probalo en la pestaña <b>Dot &amp; cross</b>: tocá <b>Transfer</b> y mirá cómo se mueven los electrones."],
+  ["q","In NaCl, sodium…","En el NaCl, el sodio…",["gives 1 electron to chlorine","takes 1 electron from chlorine","shares electrons with chlorine"],0,"Na (Group 1) <b>gives</b> its outer electron → Na⁺. Cl gets it → Cl⁻.","El Na (grupo 1) <b>da</b> su electrón externo → Na⁺. El Cl lo recibe → Cl⁻."],
+  ["q","In MgCl₂, magnesium gives 2 electrons. How many does each chlorine get?","En el MgCl₂ el magnesio da 2 electrones. ¿Cuántos recibe cada cloro?",["1","2","0"],0,"Two Cl atoms, <b>one electron each</b> → two Cl⁻ ions.","Dos átomos de Cl, <b>uno cada uno</b> → dos iones Cl⁻."],
+  ["p","To find the <b>formula</b>, balance the charges so the total is <b>zero</b>. K⁺ and O²⁻ → you need two K⁺ → <span class='f'>K₂O</span>.","Para la <b>fórmula</b>, equilibrá las cargas para que el total sea <b>cero</b>. K⁺ y O²⁻ → hacen falta dos K⁺ → K₂O."],
+  ["q","A lattice has caesium ions (Cs⁺) and chloride ions (Cl⁻). The formula is…","Una red tiene iones cesio (Cs⁺) y cloruro (Cl⁻). La fórmula es…",["CsCl","Cs₂Cl","CsCl₂"],0,"+1 and −1 add up to zero: <b>CsCl</b>.","+1 y −1 suman cero: <b>CsCl</b>."],
+  ["q","A dot and cross diagram does NOT show…","Un diagrama de puntos y cruces NO muestra…",["where the electrons came from","the size and arrangement of the ions"],1,"It shows the electrons, but <b>not</b> the size of the ions or how they are arranged.","Muestra los electrones, pero <b>no</b> el tamaño de los iones ni cómo se ordenan."]]},
+ {id:"e8",g:"ingles",c:"--t-hidroxido",en:"Lab equipment 1: glassware",es:"Equipamiento 1: material de vidrio",s:[
+  ["p","A <b>beaker</b> is for general use. An <b>Erlenmeyer flask</b> has a flat base and a narrow neck.","El <b>vaso de precipitados</b> es de uso general. El <b>matraz Erlenmeyer</b> tiene base plana y cuello angosto."],
+  ["p","A <b>volumetric flask</b> is only for <b>precise</b> volume at a set temperature.","El <b>matraz aforado</b> es solo para volúmenes <b>precisos</b> a una temperatura fija."],
+  ["q","You need an exact volume of 250 mL. You use a…","Necesitás un volumen exacto de 250 mL. Usás un…",["beaker","volumetric flask","test tube"],1,"<b>Volumetric flask</b>: special precision.","<b>Matraz aforado</b>: precisión especial."],
+  ["p","<b>Test tubes</b> and <b>burets</b> cannot stand on their own. Keep them in their <b>racks</b>.","Los <b>tubos de ensayo</b> y las <b>buretas</b> no se paran solos. Se guardan en sus <b>gradillas/soportes</b>."],
+  ["p","<b>Droppers</b> and <b>pipettes</b> are for <b>transferring</b> liquids. Don't store substances in them.","<b>Goteros</b> y <b>pipetas</b> sirven para <b>trasvasar</b> líquidos. No se guardan sustancias en ellos."],
+  ["p","Pour carefully into narrow containers like a <b>graduated cylinder</b>. Use a <b>funnel</b> to avoid spillage.","Serví con cuidado en recipientes angostos como la <b>probeta</b>. Usá un <b>embudo</b> para no derramar."],
+  ["q","What is a funnel used for?","¿Para qué se usa un embudo?",["To heat liquids","To pour into narrow containers without spilling","To measure exact volumes"],1,"A <b>funnel</b> helps you pour without spilling.","El <b>embudo</b> ayuda a servir sin derramar."],
+  ["p","Only <b>water</b> goes in the <b>wash bottle</b>.","En la <b>piseta</b> va solo <b>agua</b>."],
+  ["q","Passive voice check: Test tubes ___ in their racks.","Voz pasiva: Los tubos de ensayo ___ en sus gradillas.",["should be kept","should keep","should kept"],0,"Modal + <b>be</b> + participle: <b>should be kept</b>.","Modal + <b>be</b> + participio: <b>should be kept</b>."]]},
+ {id:"e9",g:"ingles",c:"--t-oxido",en:"Lab equipment 2: safety",es:"Equipamiento 2: seguridad",s:[
+  ["p","The most important thing in the lab is <b>safety</b>!","¡Lo más importante en el laboratorio es la <b>seguridad</b>!"],
+  ["p","<b>Preventing burns:</b> turn off <b>burners</b> and <b>hot plates</b> when you don't use them. Use <b>tongs</b> to hold hot things.","<b>Evitar quemaduras:</b> apagá <b>mecheros</b> y <b>placas calefactoras</b> cuando no los usás. Usá <b>pinzas</b> para agarrar cosas calientes."],
+  ["q","You need to pick up a hot beaker. You use…","Tenés que agarrar un vaso caliente. Usás…",["your hands","tongs","a spatula"],1,"<b>Tongs</b> protect you from burns.","Las <b>pinzas</b> te protegen de quemaduras."],
+  ["p","<b>Protecting the skin:</b> never touch chemicals with bare hands. Use a <b>stirring rod</b> or a <b>spatula</b>.","<b>Proteger la piel:</b> nunca toques químicos con las manos. Usá una <b>varilla</b> o una <b>espátula</b>."],
+  ["p","To crush a solid, use a <b>mortar and pestle</b>: the mortar is the bowl, the pestle is the tool.","Para moler un sólido se usa <b>mortero y pilón</b>: el mortero es el bowl y el pilón es la herramienta."],
+  ["q","The bowl in which materials are crushed is the…","El recipiente donde se muelen los materiales es el…",["mortar","pestle","funnel"],0,"<b>Mortar</b> = bowl. Pestle = the tool that crushes.","<b>Mortar</b> = mortero (el bowl). Pestle = el pilón."],
+  ["p","<b>Controlling chemicals:</b> use <b>forceps</b> for very small objects and a <b>clamp</b> to stop a container from tipping over.","<b>Controlar los químicos:</b> usá <b>pinzas finas</b> para objetos muy chicos y una <b>agarradera</b> para que el recipiente no se vuelque."],
+  ["p","Disconnect <b>tubing</b> with care: it may still have some liquid inside.","Desconectá las <b>mangueras</b> con cuidado: pueden tener líquido adentro."],
+  ["q","How can a clamp prevent an accident?","¿Cómo previene un accidente una agarradera?",["It heats the tube","It holds the container so it doesn't tip over","It crushes solids"],1,"A <b>clamp</b> holds the container still.","La <b>agarradera</b> sostiene el recipiente quieto."],
+  ["q","Passive voice check: The test tube ___ by the clamp.","Voz pasiva: El tubo ___ por la agarradera.",["was held","held","was hold"],0,"was + past participle (<b>held</b>) → <b>was held</b>.","was + participio (<b>held</b>) → <b>was held</b>."]]}
+);
+
+/* ---------- Lab kit: tarjetas con dibujo + juego ---------- */
+const KIT=[
+ ["beaker","vaso de precipitados","Containers","A wide container with a flat base, for general use.",'<path d="M18 10h28M20 10v40a4 4 0 0 0 4 4h16a4 4 0 0 0 4-4V10M20 32h24"/>'],
+ ["test tube","tubo de ensayo","Containers","A small, narrow tube with a round bottom. Keep it in a rack.",'<path d="M26 6h12M28 6v44a4 4 0 0 0 8 0V6M28 34h8"/>'],
+ ["Erlenmeyer flask","matraz Erlenmeyer","Containers","A cone-shaped flask with a flat base and a narrow neck.",'<path d="M26 6h12M28 6v18L14 54a3 3 0 0 0 3 4h30a3 3 0 0 0 3-4L36 24V6M19 46h26"/>'],
+ ["volumetric flask","matraz aforado","Measuring","For one exact volume at a set temperature. Very precise.",'<path d="M28 4h8M29 4v30M35 4v30M30 18h4"/><circle cx="32" cy="46" r="14"/>'],
+ ["graduated cylinder","probeta","Measuring","A tall tube with marks to measure the volume of a liquid.",'<path d="M24 6h16M26 6v48h12V6M18 58h28M26 16h5M26 24h5M26 32h5M26 40h5"/>'],
+ ["buret","bureta","Measuring","A long tube with a tap, to add exact amounts of liquid.",'<path d="M28 4v40h8V4M30 44v6h4v-6M24 47h16M32 50v8M28 12h4M28 20h4M28 28h4"/>'],
+ ["dropper","gotero","Transferring","A tube with a squeezable bulb, to move small amounts of liquid.",'<path d="M26 18V9a6 6 0 0 1 12 0v9ZM28 18h8l-2 32-2 6-2-6Z"/>'],
+ ["pipette","pipeta","Transferring","A thin tube to move an exact amount of liquid.",'<path d="M31 2v16M33 2v16M31 34v26M33 34v26"/><ellipse cx="32" cy="26" rx="5" ry="8"/>'],
+ ["funnel","embudo","Transferring","Helps you pour into narrow containers without spilling.",'<path d="M12 12h40L36 34v22h-8V34Z"/>'],
+ ["wash bottle","piseta","Cleaning","A squeeze bottle. Only water goes inside.",'<path d="M22 24h20v32a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4ZM28 24v-6h8v6M32 18V10l14-4"/>'],
+ ["burner","mechero","Heating","Makes an open flame to heat things. Turn it off after use.",'<path d="M26 60h12M28 60V32h8v28M24 32h16M32 28c-7-6 0-12 0-20 5 6 8 13 0 20Z"/>'],
+ ["hot plate","placa calefactora","Heating","A flat surface that gets hot, to heat containers.",'<path d="M8 40h48v12H8ZM12 52v6M52 52v6M18 34c0-4 4-4 4-8M32 34c0-4 4-4 4-8M46 34c0-4 4-4 4-8"/>'],
+ ["tongs","pinza (de crisol)","Handling","A tool to grab hot things after heating.",'<path d="M10 52 40 14M20 58 50 22M40 14l8-6M50 22l8-4"/><circle cx="13" cy="57" r="5"/>'],
+ ["stirring rod","varilla de vidrio","Handling","A glass rod to mix liquids, so you don't touch them.",'<path d="M14 54 50 10" stroke-width="4"/>'],
+ ["spatula","espátula","Handling","A small flat tool to move or spread solids.",'<path d="M12 56 40 24M40 24l9-13a5 5 0 0 1 7 6L44 28Z"/>'],
+ ["mortar and pestle","mortero y pilón","Handling","A bowl (mortar) and a tool (pestle) to crush solids.",'<path d="M10 32h44a22 22 0 0 1-44 0ZM36 30 50 6a3 3 0 0 1 5 3L42 32"/>'],
+ ["forceps","pinzas finas","Handling","Small tweezers for very small objects.",'<path d="M30 6 22 56M34 6l8 50M30 6h4"/>'],
+ ["clamp","agarradera","Handling","Holds a container on a stand so it doesn't tip over.",'<path d="M10 4v56M10 30h20M30 22v16a8 8 0 0 0 16 0V22"/>'],
+ ["tubing","manguera / tubo de goma","Transferring","A flexible tube to move liquids or gases. Disconnect it with care.",'<path d="M8 22c16 0 16 22 32 22s16-22 16-22" stroke-width="5"/>']
+];
+const ico=k=>`<svg viewBox="0 0 64 64" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${k[4]}</svg>`;
+function vistaKit(){let cat="All";
+  const cats=["All",...new Set(KIT.map(k=>k[2]))];
+  vista.innerHTML=`<h2>Lab kit <span class="en" style="font-size:1rem;font-weight:400">Equipamiento de laboratorio</span></h2>
+  <p>Learn the name, what it is for, and how to say it. Then play the game.</p><p class="dato">Aprendé el nombre, para qué sirve y cómo se dice. Después jugá.</p>
+  <div class="sub-sel" id="cats">${cats.map(c=>`<button data-c="${c}" aria-pressed="${c===cat}">${c}</button>`).join("")}</div>
+  <div class="grid3" id="kitg"></div>
+  <section class="card" style="gap:12px"><h3>Game: Which one is it? · <span style="font-weight:400">¿Cuál es?</span></h3><div id="kitq"></div></section>`;
+  const pint=()=>{document.getElementById("kitg").innerHTML=KIT.filter(k=>cat==="All"||k[2]===cat).map(k=>`<div class="card" style="grid-template-columns:56px 1fr;align-items:center;gap:12px;color:var(--ink)">${ico(k)}<div style="min-width:0"><b>${k[0]}</b>${voz(k[0])}<div class="dato">${k[1]}</div><div style="font-size:.92rem">${k[3]}</div></div></div>`).join("")};
+  document.getElementById("cats").onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;cat=b.dataset.c;document.querySelectorAll("#cats button").forEach(x=>x.setAttribute("aria-pressed",x===b));pint()};
+  const jugar=()=>{const k=azar(KIT),ops=mezclar([k,...mezclar(KIT.filter(x=>x!==k)).slice(0,3)]);
+    document.getElementById("kitq").innerHTML=`<p class="preg">${k[3]}</p><div class="grid2">${ops.map((o,i)=>`<button class="opcion" data-i="${i}" style="display:flex;gap:10px;align-items:center">${ico(o)}<span>${o[0]}</span></button>`).join("")}</div><div id="kitfb"></div>`;
+    document.querySelectorAll("#kitq .opcion").forEach(b=>b.onclick=()=>{const o=ops[+b.dataset.i];document.querySelectorAll("#kitq .opcion").forEach(x=>{x.disabled=true;if(ops[+x.dataset.i]===k)x.classList.add("ok")});
+      if(o===k){est.racha++;sumar(5,"+5 XP")}else{b.classList.add("mal");est.racha=0;guardar();pintarNivel()}
+      document.getElementById("kitfb").innerHTML=`<div class="feedback"><b>${o===k?"Correct!":"It's the "+k[0]+"."}</b> ${k[0]} = ${k[1]} ${voz(k[0])}</div><div class="acciones" style="justify-content:flex-start;margin-top:10px"><button class="btn" id="kitn">Next →</button></div>`;
+      document.getElementById("kitn").onclick=jugar})};
+  pint();jugar()}
+
+/* ---------- Dot & cross interactivo ---------- */
+const DC={
+ "NaCl":{n:"sodium chloride",es:"cloruro de sodio",a:[["Na",1,1,"2,8,1","2,8"],["Cl",0,7,"2,8,7","2,8,8"]]},
+ "MgO":{n:"magnesium oxide",es:"óxido de magnesio",a:[["Mg",1,2,"2,8,2","2,8"],["O",0,6,"2,6","2,8"]]},
+ "MgCl₂":{n:"magnesium chloride",es:"cloruro de magnesio",a:[["Cl",0,7,"2,8,7","2,8,8"],["Mg",1,2,"2,8,2","2,8"],["Cl",0,7,"2,8,7","2,8,8"]]},
+ "Na₂O":{n:"sodium oxide",es:"óxido de sodio",a:[["Na",1,1,"2,8,1","2,8"],["O",0,6,"2,6","2,8"],["Na",1,1,"2,8,1","2,8"]]},
+ "KBr":{n:"potassium bromide",es:"bromuro de potasio",a:[["K",1,1,"2,8,8,1","2,8,8"],["Br",0,7,"7 outer","8 outer"]]},
+ "K₂O":{n:"potassium oxide",es:"óxido de potasio",a:[["K",1,1,"2,8,8,1","2,8,8"],["O",0,6,"2,6","2,8"],["K",1,1,"2,8,8,1","2,8,8"]]}
+};
+const SUPQ=n=>({1:"",2:"²",3:"³"})[n]||"";
+function vistaDot(){let caso="NaCl";
+  vista.innerHTML=`<h2>Dot &amp; cross <span class="en" style="font-size:1rem;font-weight:400">Diagramas de puntos y cruces</span></h2>
+  <p>Dots (<b style="color:#2F6BFF">●</b>) are the metal's electrons. Crosses (<b style="color:#D9333F">×</b>) are the non-metal's electrons. Only the <b>outer shell</b> is shown.</p>
+  <p class="dato">Los puntos son los electrones del metal; las cruces, los del no metal. Solo se dibuja la última capa.</p>
+  <div class="mols" id="dcs">${Object.keys(DC).map(k=>`<button data-k="${k}" aria-pressed="${k===caso}">${k}</button>`).join("")}</div>
+  <section class="card" style="gap:12px"><div class="scroll"><svg id="dcsvg" viewBox="0 52 600 175" style="width:100%;min-width:420px;height:auto"></svg></div>
+    <div class="acciones" style="justify-content:flex-start"><button class="btn" id="tr">Transfer electrons</button><button class="btn sec" id="rs">Reset</button></div>
+    <div id="dctx" class="feedback"></div></section>`;
+  const svg=document.getElementById("dcsvg");
+  const dibujar=()=>{const c=DC[caso],n=c.a.length,R=40;const xs=c.a.map((_,i)=>n===1?300:90+i*(420/(n-1)));
+    let h="";const need=c.a.map(a=>a[1]?0:8-a[2]);const libres=c.a.map((a,i)=>a[1]?[]:Array.from({length:8},(_,k)=>k).slice(a[2]).map(k=>{const t=-Math.PI/2+k*Math.PI/4;return [xs[i]+R*Math.cos(t),110+R*Math.sin(t)]}));
+    c.a.forEach((a,i)=>{const [s,met,o,conf]=a;h+=`<circle class="capa${i}" cx="${xs[i]}" cy="110" r="${R}" fill="none" stroke="var(--soft)" stroke-width="1.6" style="transition:opacity .8s"/>
+      <text x="${xs[i]}" y="116" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="18" fill="var(--ink)">${s}</text>
+      <text class="lab${i}" x="${xs[i]}" y="186" text-anchor="middle" font-size="13" fill="var(--soft)">${conf}</text>
+      <text class="ion${i}" x="${xs[i]}" y="212" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="16" fill="var(--ink)" opacity="0" style="transition:opacity .8s"></text>`;
+      if(!met)for(let k=0;k<o;k++){const t=-Math.PI/2+k*Math.PI/4;h+=`<text x="${xs[i]+R*Math.cos(t)}" y="${110+R*Math.sin(t)+5}" text-anchor="middle" font-size="16" font-weight="700" fill="#D9333F">×</text>`}});
+    // electrones del metal (puntos) que se van a mover
+    const mov=[];c.a.forEach((a,i)=>{if(!a[1])return;for(let k=0;k<a[2];k++){
+      const dest=c.a.map((b,j)=>[j,Math.abs(j-i)]).filter(([j])=>need[j]>0).sort((p,q)=>p[1]-q[1])[0];
+      const hacia=dest&&xs[dest[0]]<xs[i]?Math.PI:0;                         // el punto arranca del lado del no metal
+      const t=hacia+(k-(a[2]-1)/2)*0.9,x=xs[i]+R*Math.cos(t),y=110+R*Math.sin(t);let tx=x,ty=y;
+      if(dest){const j=dest[0];need[j]--;const [lx,ly]=libres[j].shift();tx=lx;ty=ly}
+      mov.push([x,y,tx,ty])}});
+    mov.forEach(([x,y,tx,ty],m)=>{h+=`<circle class="ele" cx="${x}" cy="${y}" r="6" fill="#2F6BFF" data-dx="${tx-x}" data-dy="${ty-y}" style="transition:transform 1.3s cubic-bezier(.5,0,.2,1) ${m*0.15}s"/>`});
+    svg.innerHTML=h;
+    document.getElementById("dctx").innerHTML=`<b>${caso}</b> · ${c.n} ${voz(c.n)} · <span class="dato">${c.es}</span><br>Press <b>Transfer</b>. <span class="dato">Tocá Transfer.</span>`};
+  const transferir=()=>{const c=DC[caso];svg.querySelectorAll(".ele").forEach(e=>e.style.transform=`translate(${e.dataset.dx}px,${e.dataset.dy}px)`);
+    setTimeout(()=>{c.a.forEach((a,i)=>{const [s,met,o,,fin]=a;const q=met?o:8-o;const ion=svg.querySelector(".ion"+i);ion.textContent=`${s}${SUPQ(q)}${met?"⁺":"⁻"}`;ion.setAttribute("opacity","1");
+        svg.querySelector(".lab"+i).textContent=fin;if(met)svg.querySelector(".capa"+i).style.opacity=".15"});
+      const metal=c.a.find(a=>a[1]),non=c.a.find(a=>!a[1]);const nm=c.a.filter(a=>a[1]).length,nn=c.a.filter(a=>!a[1]).length;
+      document.getElementById("dctx").innerHTML=`<b>${caso}</b> · ${c.n} ${voz(c.n)}<br>
+        ${nm>1?`Each ${metal[0]} atom`:`The ${metal[0]} atom`} <b>loses ${metal[2]}</b> electron${metal[2]>1?"s":""} → <b>${metal[0]}${SUPQ(metal[2])}⁺</b>. ${nn>1?`Each ${non[0]} atom`:`The ${non[0]} atom`} <b>gains ${8-non[2]}</b> → <b>${non[0]}${SUPQ(8-non[2])}⁻</b>. Opposite charges attract: <b>ionic bond</b>.
+        <div class="dato" style="margin-top:6px">${nm>1?`Cada átomo de ${metal[0]}`:`El ${metal[0]}`} <b>pierde ${metal[2]}</b> electrón${metal[2]>1?"es":""} y ${nn>1?`cada ${non[0]}`:`el ${non[0]}`} <b>gana ${8-non[2]}</b>. Las cargas opuestas se atraen: <b>enlace iónico</b>. Las cargas suman cero.</div>`;
+      const k="dc"+caso;if(!est.hechos[k]){est.hechos[k]=1;sumar(3,"+3 XP")}},1500+c.a.length*150)};
+  document.getElementById("dcs").onclick=e=>{const b=e.target.closest("[data-k]");if(!b)return;caso=b.dataset.k;document.querySelectorAll("#dcs button").forEach(x=>x.setAttribute("aria-pressed",x===b));dibujar()};
+  document.getElementById("tr").onclick=transferir;document.getElementById("rs").onclick=dibujar;dibujar()}
+
+
+/* ================= PASO A PASO: ruta visual desde cero ================= */
+const AC={H:"#F4F4F4",O:"#E5322D",C:"#3A3A3A",N:"#3050F8",Na:"#9B5DE5",Cl:"#2FB84A",Fe:"#C0692B",Mg:"#7FA7B5",S:"#E6C619",Ca:"#3DB8C8",Al:"#A0A7B5",K:"#8F5BD6"};
+const OSC=["O","C","N","Na","Cl","Fe","K"];
+function at(x,y,r,s,lbl=true){const c=AC[s]||"#999";return `<g><circle cx="${x}" cy="${y}" r="${r}" fill="${c}" stroke="rgba(0,0,0,.28)" stroke-width="1.5"/><circle cx="${x-r*.35}" cy="${y-r*.35}" r="${r*.28}" fill="#fff" opacity=".35"/>${lbl?`<text x="${x}" y="${y+r*.32}" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="${Math.round(r*.85)}" fill="${OSC.includes(s)?"#fff":"#222"}">${s}</text>`:""}</g>`}
+const T_=(x,y,t,o="")=>`<text x="${x}" y="${y}" text-anchor="middle" fill="var(--ink)" font-size="15" ${o}>${t}</text>`;
+const TS=(x,y,t)=>`<text x="${x}" y="${y}" text-anchor="middle" fill="var(--soft)" font-size="12">${t}</text>`;
+function bohr(cx,cy,conf,s,glow){const radios=[30,50,70];let h="";conf.forEach((n,i)=>{const r=radios[i],ult=i===conf.length-1;
+  h+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${glow&&ult?"#F2A93B":"var(--soft)"}" stroke-width="${glow&&ult?4:1.5}" ${glow&&ult?'style="filter:drop-shadow(0 0 6px #F2A93B)"':""}/>`;
+  h+=`<g class="gira" style="transform-origin:${cx}px ${cy}px;animation-duration:${8+i*5}s">`;for(let k=0;k<n;k++){const t=k*2*Math.PI/n-Math.PI/2;h+=`<circle cx="${cx+r*Math.cos(t)}" cy="${cy+r*Math.sin(t)}" r="5" fill="#2F6BFF"/>`}h+="</g>"});
+  return h+at(cx,cy,17,s)}
+const VIS={
+ atomos:()=>`<path d="M75 40C75 40 35 100 35 132a40 40 0 0 0 80 0C115 100 75 40 75 40Z" fill="#6FB7FF" opacity=".9"/>${TS(75,200,"una gota de agua")}
+   <path d="M125 120h60" stroke="var(--soft)" stroke-width="2" stroke-dasharray="5 4"/><path d="M180 113l9 7-9 7" fill="none" stroke="var(--soft)" stroke-width="2"/>${TS(155,108,"zoom")}
+   <circle cx="295" cy="115" r="92" fill="var(--bg)" stroke="var(--soft)" stroke-width="2" stroke-dasharray="6 5"/>
+   ${[[265,80],[325,95],[285,150],[340,155],[240,130]].map(([x,y],i)=>`<g class="vib" style="animation-delay:${i*.3}s">${at(x-11,y-9,8,"H",false)}${at(x+11,y-9,8,"H",false)}${at(x,y,13,"O",false)}</g>`).join("")}${TS(295,225,"átomos de H y O")}`,
+ elementos:()=>[["H","hidrógeno","hydrogen"],["O","oxígeno","oxygen"],["C","carbono","carbon"],["Fe","hierro","iron"],["Na","sodio","sodium"],["Cl","cloro","chlorine"]].map(([s,es,en],i)=>{const x=40+i*64;return at(x,90,25,s)+T_(x,140,es,'font-size="13"')+TS(x,158,en)}).join(""),
+ compuesto:()=>`<g class="junta-i">${at(70,105,18,"H")}</g>${at(200,105,28,"O")}<g class="junta-d">${at(330,105,18,"H")}</g>
+   <text class="aparece" x="200" y="180" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="30" fill="var(--ink)">H₂O</text><text class="aparece" x="200" y="205" text-anchor="middle" fill="var(--soft)" font-size="13">agua · water</text>`,
+ receta:()=>`<text x="140" y="125" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="84" fill="var(--ink)">H<tspan font-size="50" dy="18">2</tspan><tspan dy="-18">O</tspan></text>
+   <path d="M95 140v28" stroke="#2F6BFF" stroke-width="2"/>${`<text x="95" y="188" text-anchor="middle" fill="#2F6BFF" font-size="14" font-weight="700">H = hidrógeno</text>`}
+   <path d="M150 150v40" stroke="#E07A12" stroke-width="2"/><text x="150" y="208" text-anchor="middle" fill="#E07A12" font-size="14" font-weight="700">2 = hay dos</text>
+   <path d="M205 60V40" stroke="#E5322D" stroke-width="2"/><text x="205" y="32" text-anchor="middle" fill="#E5322D" font-size="14" font-weight="700">O = oxígeno (1)</text>
+   ${at(300,120,10,"H",false)}${at(340,120,10,"H",false)}${at(320,100,16,"O",false)}${TS(320,160,"2 H + 1 O")}`,
+ co2:()=>`${at(140,105,26,"O")}${at(200,105,22,"C")}${at(260,105,26,"O")}<text x="200" y="180" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="30" fill="var(--ink)">CO₂</text>`,
+ tabla:()=>{const E=[["H",1,1,"n"],["He",18,1,"g"],["Li",1,2,"m"],["Be",2,2,"m"],["B",13,2,"s"],["C",14,2,"n"],["N",15,2,"n"],["O",16,2,"n"],["F",17,2,"n"],["Ne",18,2,"g"],
+   ["Na",1,3,"m"],["Mg",2,3,"m"],["Al",13,3,"m"],["Si",14,3,"s"],["P",15,3,"n"],["S",16,3,"n"],["Cl",17,3,"n"],["Ar",18,3,"g"],["K",1,4,"m"],["Ca",2,4,"m"],
+   ...["Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn"].map((s,i)=>[s,3+i,4,"m"]),["Ga",13,4,"m"],["Ge",14,4,"s"],["As",15,4,"s"],["Se",16,4,"n"],["Br",17,4,"n"],["Kr",18,4,"g"]];
+   const C={m:"#5A8DEE",n:"#F0913A",g:"#A98BD8",s:"#AAB0BA"},w=21;
+   return E.map(([s,c,f,t])=>`<rect x="${10+(c-1)*w}" y="${18+(f-1)*w}" width="${w-2}" height="${w-2}" rx="3" fill="${C[t]}"/><text x="${10+(c-1)*w+(w-2)/2}" y="${18+(f-1)*w+14}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${s}</text>`).join("")+
+   `<rect x="20" y="120" width="14" height="14" rx="3" fill="${C.m}"/><text x="40" y="132" font-size="13" fill="var(--ink)">Metales · metals</text>
+    <rect x="200" y="120" width="14" height="14" rx="3" fill="${C.n}"/><text x="220" y="132" font-size="13" fill="var(--ink)">No metales · non-metals</text>
+    <rect x="20" y="145" width="14" height="14" rx="3" fill="${C.g}"/><text x="40" y="157" font-size="13" fill="var(--ink)">Gases nobles (no se combinan)</text>
+    <path d="M30 185h150" stroke="${C.m}" stroke-width="6" stroke-linecap="round"/><text x="105" y="205" text-anchor="middle" font-size="12" fill="var(--soft)">a la izquierda</text>
+    <path d="M230 185h130" stroke="${C.n}" stroke-width="6" stroke-linecap="round"/><text x="295" y="205" text-anchor="middle" font-size="12" fill="var(--soft)">a la derecha</text>`},
+ props:()=>`<rect x="20" y="20" width="170" height="170" rx="14" fill="#5A8DEE" opacity=".14"/><rect x="230" y="20" width="160" height="170" rx="14" fill="#F0913A" opacity=".14"/>
+   <text x="105" y="45" text-anchor="middle" font-weight="800" fill="#3A6FD8" font-size="16">METAL</text><text x="310" y="45" text-anchor="middle" font-weight="800" fill="#D2701A" font-size="16">NO METAL</text>
+   <rect x="50" y="62" width="110" height="26" rx="5" fill="#C9D2DE"/><path d="M60 68h60" stroke="#fff" stroke-width="4" opacity=".8"/><path d="M150 58l4 8 8 4-8 4-4 8-4-8-8-4 8-4Z" fill="#FFD84D" class="brilla"/>
+   <path d="M98 100l-12 22h12l-8 22 22-28h-13l9-16Z" fill="#FFB800"/>
+   <text x="105" y="168" text-anchor="middle" font-size="12" fill="var(--ink)">brillan · conducen</text><text x="105" y="183" text-anchor="middle" font-size="12" fill="var(--ink)">electricidad y calor</text>
+   <path d="M270 92a16 16 0 0 1 30-8 14 14 0 0 1 26 6 12 12 0 0 1-2 24h-50a12 12 0 0 1-4-22Z" fill="#D9DEE6" class="flota"/>
+   <path d="M285 130l14-8 18 4 8 14-10 10h-22Z" fill="#E6C619" opacity=".85"/>
+   <text x="310" y="168" text-anchor="middle" font-size="12" fill="var(--ink)">opacos · no conducen</text><text x="310" y="183" text-anchor="middle" font-size="12" fill="var(--ink)">muchos son gases</text>`,
+ importa:()=>`${at(50,70,22,"Fe")}${T_(95,77,"+")}${at(135,70,22,"O")}${T_(185,77,"→")}<rect x="205" y="52" width="170" height="36" rx="10" fill="var(--t-oxido)" opacity=".18"/>${T_(290,76,"óxido BÁSICO",'font-weight="800"')}
+   ${at(50,150,22,"C")}${T_(95,157,"+")}${at(135,150,22,"O")}${T_(185,157,"→")}<rect x="205" y="132" width="170" height="36" rx="10" fill="var(--t-oxoacido)" opacity=".18"/>${T_(290,156,"óxido ÁCIDO",'font-weight="800"')}
+   ${TS(50,110,"metal")}${TS(50,190,"no metal")}`,
+ bohr:()=>bohr(200,110,[2,8,1],"Na",false)+TS(200,215,"sodio: 2 · 8 · 1 electrones")+`<text x="320" y="40" font-size="12" fill="var(--soft)">● = electrón</text>`,
+ ultima:()=>bohr(200,110,[2,8,1],"Na",true)+`<path d="M300 50l-28 22" stroke="#F2A93B" stroke-width="2"/><text x="305" y="42" font-size="14" font-weight="700" fill="#B86E00">última capa</text><text x="305" y="60" font-size="12" fill="var(--soft)">outer shell</text>`,
+ pasa:()=>`<circle cx="110" cy="105" r="55" fill="none" stroke="var(--soft)" stroke-width="1.6"/>${at(110,105,22,"Na")}<circle cx="290" cy="105" r="55" fill="none" stroke="var(--soft)" stroke-width="1.6"/>${at(290,105,22,"Cl")}
+   ${[0,1,2,3,4,5,6].map(k=>{const t=-Math.PI/2+(k+1)*2*Math.PI/8;return `<text x="${290+55*Math.cos(t)}" y="${105+55*Math.sin(t)+5}" text-anchor="middle" font-size="16" font-weight="800" fill="#D9333F">×</text>`}).join("")}
+   <circle class="viaja" cx="165" cy="105" r="7" fill="#2F6BFF"/>${TS(110,190,"Na regala 1")}${TS(290,190,"Cl agarra 1")}`,
+ iones:()=>`<text x="110" y="60" text-anchor="middle" font-size="34" font-weight="800" fill="#2F6BFF">+</text>${at(110,110,30,"Na")}<text x="290" y="60" text-anchor="middle" font-size="34" font-weight="800" fill="#D9333F">−</text>${at(290,110,38,"Cl")}
+   <path class="atrae" d="M150 110h90M228 102l12 8-12 8M162 102l-12 8 12 8" fill="none" stroke="var(--ink)" stroke-width="2.5"/>${TS(200,95,"se atraen")}
+   <text x="110" y="180" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="20" fill="var(--ink)">Na⁺</text><text x="290" y="180" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="20" fill="var(--ink)">Cl⁻</text>${TS(200,210,"juntos: NaCl, la sal de mesa")}`,
+ chapas:()=>`${at(130,120,34,"Na")}${at(270,120,40,"Cl")}<rect x="100" y="42" width="60" height="32" rx="8" fill="#1E8E4E"/><text x="130" y="65" text-anchor="middle" font-weight="800" font-size="18" fill="#fff">+1</text>
+   <rect x="240" y="36" width="60" height="32" rx="8" fill="#C7362F"/><text x="270" y="59" text-anchor="middle" font-weight="800" font-size="18" fill="#fff">−1</text>${TS(200,200,"cada átomo lleva su “número de camiseta”")}`,
+ balanza:()=>`<path d="M200 190l-22 0 22-50 22 50Z" fill="var(--soft)"/><g class="balancea" style="transform-origin:200px 140px"><path d="M70 140h260" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
+   <path d="M70 140l-25 40h50Z M330 140l-25 40h50Z" fill="none" stroke="var(--ink)" stroke-width="2"/>
+   <rect x="45" y="182" width="50" height="30" rx="8" fill="#1E8E4E"/><text x="70" y="203" text-anchor="middle" font-weight="800" fill="#fff">+1</text>
+   <rect x="305" y="182" width="50" height="30" rx="8" fill="#C7362F"/><text x="330" y="203" text-anchor="middle" font-weight="800" fill="#fff">−1</text></g>
+   <text x="200" y="60" text-anchor="middle" font-size="34" font-weight="800" fill="var(--ink)">+1 − 1 = 0</text><text x="200" y="90" text-anchor="middle" font-size="14" fill="var(--ok)" font-weight="700">equilibrado ✔</text>`,
+ fichas:()=>[["O","−2","casi siempre","#C7362F"],["H","+1","con no metales","#1E8E4E"],["Na K Li","+1","siempre","#1E8E4E"],["Mg Ca","+2","siempre","#1E8E4E"],["F","−1","siempre","#C7362F"],["solo","0","O₂, Fe, Cu…","#6B7280"]]
+   .map(([a,n,d,c],i)=>{const x=20+(i%3)*126,y=20+Math.floor(i/3)*100;return `<rect x="${x}" y="${y}" width="114" height="88" rx="12" fill="${c}" opacity=".13" stroke="${c}"/><text x="${x+57}" y="${y+28}" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="16" fill="var(--ink)">${a}</text><text x="${x+57}" y="${y+58}" text-anchor="middle" font-weight="800" font-size="24" fill="${c}">${n}</text><text x="${x+57}" y="${y+78}" text-anchor="middle" font-size="11" fill="var(--soft)">${d}</text>`}).join(""),
+ suma:(fs)=>{const w=70;const x0=200-(fs.length*w+ (fs.length)*20)/2;return fs.map(([s,n,c],i)=>{const x=x0+i*(w+20);return `${at(x+w/2,80,24,s)}<rect x="${x+8}" y="120" width="${w-16}" height="34" rx="8" fill="${n==="?"?"var(--accent)":c}"/><text x="${x+w/2}" y="143" text-anchor="middle" font-weight="800" font-size="17" fill="#fff">${n}</text>${i<fs.length-1?`<text x="${x+w+10}" y="143" text-anchor="middle" font-weight="800" font-size="20" fill="var(--ink)">+</text>`:""}`}).join("")+`<text x="${x0+fs.length*(w+20)}" y="143" font-weight="800" font-size="20" fill="var(--ink)">= 0</text>`},
+ cruce:()=>`<text x="110" y="95" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="46" fill="var(--ink)">Fe</text><text x="160" y="62" font-weight="800" font-size="24" fill="#1E8E4E">+3</text>
+   <text x="270" y="95" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="46" fill="var(--ink)">O</text><text x="296" y="62" font-weight="800" font-size="24" fill="#C7362F">−2</text>
+   <path class="dibuja" d="M175 70 C 230 90, 270 110, 300 120" fill="none" stroke="#1E8E4E" stroke-width="3"/><path class="dibuja" d="M305 70 C 240 90, 170 110, 140 120" fill="none" stroke="#C7362F" stroke-width="3"/>
+   <text class="aparece" x="200" y="185" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="44" fill="var(--ink)">Fe<tspan font-size="28" dy="10" fill="#C7362F">2</tspan><tspan dy="-10">O</tspan><tspan font-size="28" dy="10" fill="#1E8E4E">3</tspan></text>`,
+ control:()=>`${[0,1].map(i=>`${at(60+i*60,70,22,"Fe")}<text x="${60+i*60}" y="115" text-anchor="middle" font-weight="800" fill="#1E8E4E">+3</text>`).join("")}${[0,1,2].map(i=>`${at(220+i*60,70,22,"O")}<text x="${220+i*60}" y="115" text-anchor="middle" font-weight="800" fill="#C7362F">−2</text>`).join("")}
+   <text x="90" y="160" text-anchor="middle" font-weight="800" font-size="24" fill="#1E8E4E">+6</text><text x="280" y="160" text-anchor="middle" font-weight="800" font-size="24" fill="#C7362F">−6</text><text x="200" y="200" text-anchor="middle" font-weight="800" font-size="22" fill="var(--ink)">+6 − 6 = 0 ✔</text>`,
+ simplifica:()=>`<text x="200" y="60" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="28" fill="var(--ink)">Ca +2   O −2</text><text x="200" y="110" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="30" fill="var(--soft)">Ca₂O₂</text>
+   <text x="200" y="140" text-anchor="middle" font-size="13" fill="var(--soft)">los dos números se pueden dividir por 2</text><text x="200" y="190" text-anchor="middle" font-family="var(--mono)" font-weight="700" font-size="40" fill="var(--ink)">CaO</text>`
+};
+// tarjeta: {v: visual, t: título, x: explicación, en:[palabra, frase], q?: {p, ops, ok, por}, serie?: {ops, items:[[html, ok]]}}
+const PARADAS=[
+ {t:"Todo está hecho de átomos",en:"Atoms",c:"--accent",cards:[
+  {v:"atomos",t:"Todo está hecho de átomos",x:"Si hacés zoom en cualquier cosa (agua, sal, tu mano) vas a encontrar piezas chiquitísimas: los átomos. Son como piezas de LEGO.",en:["atom","Everything is made of atoms."]},
+  {v:"elementos",t:"Cada tipo de átomo es un elemento",x:"Hay 118 tipos de átomos. Cada tipo se llama elemento y tiene un símbolo de 1 o 2 letras.",en:["element","Iron is an element. Its symbol is Fe."]},
+  {v:"compuesto",t:"Átomos distintos juntos = compuesto",x:"Cuando se unen átomos de elementos DISTINTOS, forman un compuesto. El agua es H y O juntos.",en:["compound","Water is a compound."]},
+  {v:"receta",t:"La fórmula es la receta",x:"La fórmula dice qué átomos hay y cuántos. El numerito chico de abajo dice cuántos. Si no hay número, hay 1.",en:["formula","The formula of water is H₂O."]},
+  {v:"co2",t:"Probá vos",x:"Mirá el dibujo y la fórmula.",en:["oxygen","CO₂ has two oxygen atoms."],q:{p:"¿Cuántos átomos de oxígeno hay en CO₂?",ops:["1","2","3"],ok:1,por:"El 2 chiquito está al lado de la O: hay 2 oxígenos."}},
+  {v:null,t:"¿Elemento solo o compuesto?",x:"Si tiene un solo tipo de símbolo, es un elemento solo (aunque haya varios átomos). Si tiene símbolos distintos, es un compuesto.",en:["simple substance / compound","O₂ is a simple substance. NaCl is a compound."],
+   serie:{ops:["Elemento solo","Compuesto"],items:[["O₂",0],["H₂O",1],["Fe",0],["NaCl",1],["CO₂",1],["N₂",0]]}}]},
+ {t:"Metales y no metales",en:"Metals & non-metals",c:"--t-salbin",cards:[
+  {v:"tabla",t:"La tabla periódica es el mapa",x:"Ordena todos los elementos. A la izquierda y al centro están los metales. A la derecha, los no metales.",en:["periodic table","Metals are on the left."]},
+  {v:"props",t:"¿Cómo los reconozco?",x:"Los metales brillan y conducen la electricidad. Los no metales no brillan y muchos son gases.",en:["metal / non-metal","Copper is a metal. Oxygen is a non-metal."]},
+  {v:"tabla",t:"Jugá: ¿metal o no metal?",x:"Usá el mapa de colores de arriba si dudás.",en:["metal","Sodium is a metal."],serie:{ops:["Metal","No metal"],items:[["Na",0],["Cl",1],["Fe",0],["O",1],["S",1],["Cu",0],["N",1],["Ca",0],["K",0],["Br",1]]}},
+  {v:"importa",t:"¿Para qué me sirve saberlo?",x:"Porque el nombre del compuesto depende de eso. Metal + oxígeno da un tipo de óxido, y no metal + oxígeno da otro.",en:["basic oxide / acidic oxide","Iron oxide is a basic oxide."]}]},
+ {t:"Electrones: los que se pasan",en:"Electrons & ions",c:"--t-hidruro",cards:[
+  {v:"bohr",t:"Adentro del átomo",x:"En el centro está el núcleo. Alrededor giran los electrones (puntos azules), ordenados en capas.",en:["electron","Electrons move around the nucleus."]},
+  {v:"ultima",t:"La última capa es la que juega",x:"Solo los electrones de la capa de afuera participan cuando los átomos se unen.",en:["outer shell","Sodium has 1 electron in its outer shell."]},
+  {v:"pasa",t:"Los metales regalan, los no metales agarran",x:"El sodio (metal) regala su electrón. El cloro (no metal) lo agarra. Así los dos quedan con la última capa completa y contentos.",en:["lose / gain","Metals lose electrons. Non-metals gain electrons."]},
+  {v:"iones",t:"Ahora tienen carga: son iones",x:"Si regalás 1 electrón quedás +1. Si agarrás 1, quedás −1. Los opuestos se atraen y quedan pegados.",en:["ion","Na⁺ is a positive ion. Cl⁻ is a negative ion."]},
+  {v:null,t:"Jugá: ¿qué carga queda?",x:"Regalar = positivo (+). Agarrar = negativo (−). El número es cuántos electrones.",en:["charge","The charge of Mg is 2+."],
+   serie:{ops:["+1","+2","−1","−2"],items:[["Mg regala 2",1],["O agarra 2",3],["K regala 1",0],["Cl agarra 1",2],["Ca regala 2",1],["S agarra 2",3]]}}]},
+ {t:"Número de oxidación",en:"Oxidation number",c:"--t-oxido",cards:[
+  {v:"chapas",t:"Cada átomo lleva un número",x:"Dentro de un compuesto, cada átomo tiene un número con signo: su número de oxidación. Es como la carga que vimos recién.",en:["oxidation number","The oxidation number of Na is +1."]},
+  {v:"balanza",t:"La regla de oro: suma CERO",x:"En un compuesto, los positivos y los negativos se compensan. Siempre suman 0.",en:["zero","The numbers add up to zero."]},
+  {v:"fichas",t:"Los que conviene saber de memoria",x:"Con estos pocos podés calcular casi todos los demás.",en:["always / almost always","Oxygen is almost always −2."]},
+  {v:{f:"suma",a:[["H","+1","#1E8E4E"],["H","+1","#1E8E4E"],["O","?","#C7362F"]]},t:"Calculá: agua H₂O",x:"Dos H valen +1 cada uno. ¿Cuánto tiene que valer el O para que todo dé 0?",en:["water","In water, oxygen is −2."],q:{p:"(+1) + (+1) + O = 0. El O vale…",ops:["+2","−2","−1"],ok:1,por:"+1 +1 −2 = 0 ✔"}},
+  {v:{f:"suma",a:[["C","?","#1E8E4E"],["O","−2","#C7362F"],["O","−2","#C7362F"]]},t:"Calculá: CO₂",x:"Dos O valen −2 cada uno. ¿Cuánto vale el C?",en:["carbon dioxide","In CO₂, carbon is +4."],q:{p:"C + (−2) + (−2) = 0. El C vale…",ops:["+2","+4","−4"],ok:1,por:"+4 −2 −2 = 0 ✔"}},
+  {v:null,t:"Jugá: elemento solo = 0",x:"Si el elemento está solo (no unido a otro distinto), su número es 0.",en:["simple substance","In O₂, oxygen is 0."],serie:{ops:["0","+1","−2"],items:[["O en O₂",0],["O en H₂O",2],["Na en NaCl",1],["Fe solo",0],["H en HCl",1]]}}]},
+ {t:"Armar fórmulas: el cruce",en:"Writing formulas",c:"--t-oxosal",cards:[
+  {v:"cruce",t:"El truco del cruce",x:"El hierro usa +3 y el oxígeno −2. Cruzás los números (sin el signo) y quedan como numeritos de abajo: Fe₂O₃.",en:["cross over","Cross the numbers: Fe₂O₃."]},
+  {v:"control",t:"Comprobalo siempre",x:"2 hierros × (+3) = +6. 3 oxígenos × (−2) = −6. Suma 0: está bien.",en:["check","Always check that it adds up to zero."]},
+  {v:{f:"suma",a:[["Al","+3","#1E8E4E"],["O","−2","#C7362F"]]},t:"Probá vos: aluminio y oxígeno",x:"Al usa +3, O usa −2. Cruzá.",en:["aluminum oxide","Aluminum oxide is Al₂O₃."],q:{p:"La fórmula es…",ops:["AlO","Al₂O₃","Al₃O₂"],ok:1,por:"El 3 va al O y el 2 va al Al: Al₂O₃. 2×3 − 3×2 = 0 ✔"}},
+  {v:"simplifica",t:"A veces se simplifica",x:"Calcio +2 y oxígeno −2 dan Ca₂O₂. Si los dos números se pueden dividir, se simplifica: CaO.",en:["simplify","Ca₂O₂ simplifies to CaO."]},
+  {v:{f:"suma",a:[["Mg","+2","#1E8E4E"],["O","−2","#C7362F"]]},t:"Último: magnesio y oxígeno",x:"Mg +2, O −2. Cruzá y fijate si se simplifica.",en:["magnesium oxide","Magnesium oxide is MgO."],q:{p:"La fórmula es…",ops:["Mg₂O₂","MgO","MgO₂"],ok:1,por:"Mg₂O₂ se simplifica dividiendo por 2: MgO ✔"}}]}
+];
+const PROXIMAS=["Óxidos y sus nombres","Hidruros","Hidrácidos","Sales binarias","Hidróxidos","Oxoácidos","Oxosales","Hidrogenosales y amonio"];
+function visual(v){if(!v)return"";const svg=typeof v==="string"?VIS[v]():VIS[v.f](v.a);return `<svg viewBox="0 0 400 225" role="img" aria-hidden="true" style="width:100%;height:auto;max-height:300px">${svg}</svg>`}
+function vistaRuta(){const hechas=est.ruta||{};
+  vista.innerHTML=`<h2>Paso a paso <span class="en" style="font-size:1rem;font-weight:400">Step by step</span></h2>
+  <p>Química desde cero, en orden. Cada parada son tarjetas cortas con un dibujo. En todas aprendés también la palabra en inglés.</p>
+  <div class="mapa-ruta">${PARADAS.map((p,i)=>`<button class="parada${hechas[i]?" hecha":""}" style="--c:var(${p.c})" data-p="${i}"><span class="num">${hechas[i]?"✔":i+1}</span><span><b>${p.t}</b><small class="en">${p.en}</small><small>${p.cards.length} tarjetas</small></span></button>`).join("")}
+    ${PROXIMAS.map((t,i)=>`<div class="parada bloq"><span class="num">${PARADAS.length+i+1}</span><span><b>${t}</b><small>próximamente</small></span></div>`).join("")}</div>`;
+  vista.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>parada(+b.dataset.p))}
+function parada(pi){const P=PARADAS[pi];let k=0;
+  const pinta=()=>{const c=P.cards[k],interactiva=!!(c.q||c.serie);
+    vista.innerHTML=`<div class="fila"><button class="btn sec" id="aRuta">← Ruta</button><span class="dato">Parada ${pi+1} · ${P.t}</span></div>
+     <div class="dots">${P.cards.map((_,j)=>`<i class="${j<k?"ok":j===k?"ya":""}"></i>`).join("")}</div>
+     <article class="vc" style="--c:var(${P.c})">
+       ${c.v?`<div class="vis">${visual(c.v)}</div>`:""}
+       <h3 class="vt">${c.t}</h3><p class="vx">${c.x}</p>
+       <div class="enbar"><span class="pill">EN</span><b>${c.en[0]}</b>${voz(c.en[0])}<span class="en-frase">${c.en[1]}</span>${voz(plano(c.en[1]))}</div>
+       <div id="inter"></div>
+     </article>
+     <div class="acciones" style="justify-content:space-between"><button class="btn sec" id="ant" ${k===0?"disabled":""}>← Atrás</button><button class="btn" id="sig" ${interactiva?"disabled":""}>${k<P.cards.length-1?"Siguiente →":"Terminar parada ✔"}</button></div>`;
+    document.getElementById("aRuta").onclick=vistaRuta;document.getElementById("ant").onclick=()=>{k--;pinta()};
+    const sig=document.getElementById("sig");sig.onclick=()=>{if(k<P.cards.length-1){k++;pinta()}else{est.ruta=est.ruta||{};const nueva=!est.ruta[pi];est.ruta[pi]=1;sumar(nueva?25:0,nueva?"¡Parada completa! +25 XP":"Parada repasada");vistaRuta()}};
+    const box=document.getElementById("inter");
+    if(c.q){box.innerHTML=`<p class="preg">${c.q.p}</p><div class="ops grande">${c.q.ops.map((o,j)=>`<button class="op" data-j="${j}">${o}</button>`).join("")}</div><div id="fbq"></div>`;
+      box.querySelectorAll(".op").forEach(b=>b.onclick=()=>{const j=+b.dataset.j;if(j===c.q.ok){box.querySelectorAll(".op").forEach(x=>x.disabled=true);b.classList.add("ok");sumar(5,"+5 XP");
+          document.getElementById("fbq").innerHTML=`<div class="feedback">✔ ${c.q.por}</div>`;sig.disabled=false;sig.focus()}
+        else{b.classList.add("mal");b.disabled=true;document.getElementById("fbq").innerHTML=`<div class="feedback">Casi. Mirá el dibujo y probá de nuevo.</div>`}})}
+    if(c.serie){let n=0,bien=0;const S=c.serie;const ronda=()=>{if(n>=S.items.length){box.innerHTML=`<div class="feedback">✔ ${bien} de ${S.items.length} a la primera. ¡Seguimos!</div>`;sumar(bien,`+${bien} XP`);sig.disabled=false;sig.focus();return}
+        const [item,ok]=S.items[n];let primera=true;
+        box.innerHTML=`<div class="serie-item">${item}</div><div class="ops grande">${S.ops.map((o,j)=>`<button class="op" data-j="${j}">${o}</button>`).join("")}</div><p class="dato">${n+1} de ${S.items.length}</p>`;
+        box.querySelectorAll(".op").forEach(b=>b.onclick=()=>{if(+b.dataset.j===ok){b.classList.add("ok");if(primera)bien++;n++;setTimeout(ronda,450)}else{primera=false;b.classList.add("mal");b.disabled=true}})};ronda()}};
+  pinta()}
+
+/* ================= CONSTRUCTOR ================= */
+const FAM=[["oxido","Óxido"],["hidruro","Hidruro metálico"],["hidracido","Hidrácido"],["salbin","Sal binaria"],["hidroxido","Hidróxido"],["oxoacido","Oxoácido"],["oxosal","Oxosal"],["hidrogenosal","Hidrogenosal"],["amonio","Sal de amonio"]];
+let cst={fam:"oxido",el:"Fe",ox:3,an:"Cl",oxo:"S|6"};
+function opt(v,t,s){return `<option value="${v}"${String(v)===String(s)?" selected":""}>${t}</option>`}
+function armarConstructor(){const c=document.getElementById("ctrl");const f=cst.fam;
+  const elems=f==="oxido"?METALES.concat(NOMETALES):(["hidruro","salbin","hidroxido","oxosal","hidrogenosal"].includes(f)?METALES:[]);
+  if(elems.length&&!elems.find(e=>e.s===cst.el))cst.el=elems[0].s;
+  const el=elems.find(e=>e.s===cst.el);if(el&&!el.ox.includes(cst.ox))cst.ox=el.ox[0];
+  let h=`<label>Familia<select id="cFam">${FAM.map(([v,t])=>opt(v,t,f)).join("")}</select></label>`;
+  if(elems.length)h+=`<label>Elemento<select id="cEl">${elems.map(e=>opt(e.s,`${e.s} · ${e.es}`,cst.el)).join("")}</select></label><label>Nº de oxidación<select id="cOx">${el.ox.filter(o=>f!=="hidrogenosal"||o<=3).map(o=>opt(o,sg(o),cst.ox)).join("")}</select></label>`;
+  if(f==="salbin"||f==="amonio"){const an=f==="amonio"?ANIONES.filter(a=>["F","Cl","Br","I","S"].includes(a.s)):ANIONES;if(!an.find(a=>a.s===cst.an))cst.an=an[0].s;
+    h+=`<label>No metal (anión)<select id="cAn">${an.map(a=>opt(a.s,`${a.s} · ${a.es} (−${a.q})`,cst.an)).join("")}</select></label>`}
+  if(f==="oxoacido"||f==="oxosal")h+=`<label>${f==="oxosal"?"Oxoanión":"Ácido"}<select id="cOxo">${OXO.map(o=>opt(`${o.x}|${o.ox}`,f==="oxosal"?`${o.ses} (${o.x} ${sg(o.ox)})`:`ácido ${o.aes} (${o.x} ${sg(o.ox)})`,cst.oxo)).join("")}</select></label>`;
+  if(f==="hidracido")h+=`<label>No metal<select id="cHid">${HIDRACIDOS.map((x,i)=>opt(i,x.es[1],cst.hid??1)).join("")}</select></label>`;
+  if(f==="hidrogenosal")h+=`<label>Anión<select id="cHs">${opt("S","HS⁻ (sulfuro)",cst.hs||"S")}${opt("Se","HSe⁻ (seleniuro)",cst.hs||"S")}</select></label>`;
+  c.innerHTML=h;
+  c.querySelectorAll("select").forEach(s=>s.onchange=()=>{const v=s.value;({cFam:()=>cst.fam=v,cEl:()=>cst.el=v,cOx:()=>cst.ox=+v,cAn:()=>cst.an=v,cOxo:()=>cst.oxo=v,cHid:()=>cst.hid=+v,cHs:()=>cst.hs=v})[s.id]();armarConstructor()});
+  mostrar(construir())}
+function construir(){const f=cst.fam,m=M(cst.el),x=X(cst.el),[ox_x,ox_n]=cst.oxo.split("|");const oo=O(ox_x,+ox_n);
+  if(f==="oxido")return m?GEN.oxidoMetal(m,cst.ox):GEN.oxidoNoMetal(x,cst.ox);
+  if(f==="hidruro")return GEN.hidruro(m,cst.ox);if(f==="salbin")return GEN.salbin(m,cst.ox,A(cst.an));
+  if(f==="hidroxido")return GEN.hidroxido(m,cst.ox);if(f==="oxoacido")return GEN.oxoacido(oo);if(f==="oxosal")return GEN.oxosal(m,cst.ox,oo);
+  if(f==="hidracido")return mkHidracido(HIDRACIDOS[cst.hid??1]);if(f==="hidrogenosal")return GEN.hidrogenosal(m,cst.ox,cst.hs||"S");
+  return GEN.amonio(A(cst.an))}
+function mostrar(c){con(c);const r=document.getElementById("res");r.style.borderLeft=`6px solid ${col(c.tipo)}`;
+  r.innerHTML=`<div class="fila">${chip(c.tipo)}${c.sub?`<span class="dato">${c.sub}</span>`:""}</div>
+  <div class="formula-grande">${c.fh}</div>
+  <div class="pasos">${c.expl}</div>
+  <div class="nombres">${c.es.map((n,i)=>`<div class="nombre"><small>${c.nom[i]||""}</small><span><b>${n}</b></span></div>`).join("")}
+    ${c.en.map((n,i)=>`<div class="nombre"><small>English</small><span class="en">${n}</span>${voz(n)}</div>`).join("")}</div>
+  <p class="dato">Números de oxidación: ${Object.entries(c.ox).map(([k,v])=>`${k} ${sg(v)}`).join(" · ")}</p>`;
+  if(!est.hechos[c.ft]){est.hechos[c.ft]=1;sumar(2,"+2 XP · fórmula nueva")}}
+
+/* ================= TARJETAS ================= */
+const GLOS=[
+  ["compuesto","compound"],["elemento","element"],["sustancia simple","simple substance"],["mezcla","mixture"],["inorgánico","inorganic"],
+  ["número de oxidación","oxidation number"],["electronegatividad","electronegativity"],["enlace","bond"],["electrones externos","valence electrons"],
+  ["carga","charge"],["neutro","neutral"],["catión","cation"],["anión","anion"],["fórmula","formula"],["subíndice","subscript"],
+  ["nomenclatura","nomenclature"],["prefijo / sufijo","prefix / suffix"],["número romano","Roman numeral"],
+  ["óxido básico","basic oxide"],["óxido ácido","acidic oxide"],["hidruro","hydride"],["hidrácido","binary acid (hydracid)"],
+  ["sal binaria","binary salt"],["hidróxido","hydroxide"],["base","base"],["ácido","acid"],["oxoácido","oxoacid"],["oxoanión","oxoanion"],
+  ["oxosal","oxosalt"],["amonio","ammonium"],["solución acuosa","aqueous solution"],["disolver","to dissolve"],
+  ["punto de fusión","melting point"],["punto de ebullición","boiling point"],["cáustico","caustic"],["soda cáustica","caustic soda"],
+  ["ácido clorhídrico","hydrochloric acid"],["ácido sulfúrico","sulfuric acid"],["cloruro de sodio","sodium chloride"],
+  ["óxido férrico","ferric oxide"],["dióxido de carbono","carbon dioxide"],["nitrato","nitrate"],["sulfito","sulfite"],["hidrógeno","hydrogen"],
+  ["oxígeno","oxygen"],["nitrógeno","nitrogen"],["azufre","sulfur"],["hierro","iron"],["cobre","copper"],["plomo","lead"],["estaño","tin"],["oro","gold"],["plata","silver"]
+];
+let mazo=[],pos=0;
+function pintarCarta(){const inv=document.getElementById("inv").checked;if(pos>=mazo.length){mazo=GLOS.map((g,i)=>i).sort(()=>Math.random()-.5);pos=0;toast("¡Mazo completo! Arrancamos otra vuelta")}
+  const [es,en]=GLOS[mazo[pos]];const fl=document.getElementById("flash");fl.classList.remove("vuelta");
+  document.getElementById("cf").innerHTML=inv?`<div><div class="t en">${en}</div>${voz(en)}</div>`:`<div><div class="t">${es}</div><p class="dato">¿Cómo se dice en inglés?</p></div>`;
+  document.getElementById("ca").innerHTML=inv?`<div><div class="t">${es}</div></div>`:`<div><div class="t en">${en}</div>${voz(en)}</div>`;
+  document.getElementById("cuenta").textContent=`Tarjeta ${pos+1} de ${mazo.length}`;
+  fl.onclick=e=>{if(!e.target.closest("[data-voz]"))fl.classList.toggle("vuelta")};fl.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fl.classList.toggle("vuelta")}};
+  document.getElementById("inv").onchange=pintarCarta;
+  document.getElementById("siSe").onclick=()=>{sumar(2,"+2 XP");pos++;pintarCarta()};
+  document.getElementById("noSe").onclick=()=>{mazo.push(mazo[pos]);pos++;pintarCarta()}}
+
+/* ================= DESAFÍO ================= */
+const azar=a=>a[Math.floor(Math.random()*a.length)];
+const mezclar=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+function distractores(c,campo,n=3){
+  const parecidos=TODOS.filter(o=>o.ft!==c.ft&&(o.tipo===c.tipo||o.central===c.central));
+  const vals=[...new Set(mezclar(parecidos).map(campo))].filter(v=>v!==campo(c));return vals.slice(0,n)}
+function pregunta(){const c=azar(TODOS);const k=Math.floor(Math.random()*5);
+  const nES=x=>x.es[x.es.length-1===0?0:Math.min(1,x.es.length-1)], nEN=x=>x.en[0];
+  if(k===0)return {q:`¿Cómo se llama <span class="f">${c.fh}</span>?`,ok:nES(c),ops:distractores(c,nES),c};
+  if(k===1)return {q:`¿Cuál es la fórmula de <i>${nEN(c)}</i>?${voz(nEN(c))}`,ok:c.fh,ops:distractores(c,x=>x.fh),c,html:true};
+  if(k===2)return {q:`¿Cómo se dice <b>${nES(c)}</b> en inglés?`,ok:nEN(c),ops:distractores(c,nEN),c};
+  if(k===3){const tipos=Object.keys(T).filter(t=>t!=="simple"&&t!=="comun"&&t!==c.tipo);
+    return {q:`¿De qué familia es <span class="f">${c.fh}</span>? <span class="dato">(${nES(c)})</span>`,ok:`${T[c.tipo].es} · ${T[c.tipo].en}`,ops:mezclar(tipos).slice(0,3).map(t=>`${T[t].es} · ${T[t].en}`),c}}
+  const v=c.ox[c.central];const ops=[...new Set([v+1,v-1,v+2,-v,v-2].filter(x=>x!==v&&x>=-4&&x<=7))].slice(0,3).map(sg);
+  return {q:`En <span class="f">${c.fh}</span>, ¿con qué número de oxidación trabaja <b>${c.central}</b>?`,ok:sg(v),ops,c}}
+let ronda=null;
+function nuevoDesafio(){ronda={n:0,bien:0,res:[]};vista.innerHTML=`<h2>Desafío de 10</h2><p>Preguntas mezcladas de química y de inglés. +10 XP por cada una bien, +5 extra si vas de racha.</p>
+  <section class="card" style="gap:14px"><div class="prog" id="prog">${"<i></i>".repeat(10)}</div><div id="qbox"></div></section>`;siguiente()}
+function siguiente(){const box=document.getElementById("qbox");if(ronda.n>=10){const b=ronda.bien;
+    box.innerHTML=`<h3>${b>=9?"¡Impecable!":b>=7?"¡Muy bien!":b>=5?"Vas bien":"Sigamos practicando"} · ${b} de 10</h3>
+    <p>${b>=7?"Estás lista para la prueba en esta parte.":"Mirá en el Constructor las que fallaste: te explica el porqué."}</p>
+    <div class="acciones" style="justify-content:flex-start"><button class="btn" id="otra">Otra ronda</button></div>`;
+    if(b===10)sumar(30,"¡Ronda perfecta! +30 XP");document.getElementById("otra").onclick=nuevoDesafio;return}
+  let p;do{p=pregunta()}while(p.ops.length<2);
+  const ops=mezclar([p.ok,...p.ops]);
+  box.innerHTML=`<p class="dato">Pregunta ${ronda.n+1} · ${chip(p.c.tipo)}</p><div class="preg">${p.q}</div>
+    <div class="opciones">${ops.map((o,i)=>`<button class="opcion" data-i="${i}">${o}</button>`).join("")}</div><div id="fb"></div>`;
+  document.querySelectorAll("#prog i")[ronda.n].classList.add("ya");
+  box.querySelectorAll(".opcion").forEach(b=>b.onclick=()=>{const ok=ops[+b.dataset.i]===p.ok;
+    box.querySelectorAll(".opcion").forEach(x=>{x.disabled=true;if(ops[+x.dataset.i]===p.ok)x.classList.add("ok")});
+    const pi=document.querySelectorAll("#prog i")[ronda.n];pi.classList.remove("ya");
+    if(ok){ronda.bien++;est.racha++;est.mejor=Math.max(est.mejor,est.racha);pi.classList.add("ok");sumar(10+(est.racha>=3?5:0),est.racha>=3?`¡Racha de ${est.racha}! +15 XP`:"+10 XP")}
+    else{b.classList.add("mal");pi.classList.add("mal");est.racha=0;guardar();pintarNivel()}
+    document.getElementById("fb").innerHTML=`<div class="feedback"><b>${ok?"¡Bien!":"Casi."}</b> <span class="f">${p.c.fh}</span> = ${p.c.es.join(" · ")} · <i>${p.c.en.join(" · ")}</i>${voz(p.c.en[0])}<br><span class="dato">${p.c.expl}</span></div>
+      <div class="acciones" style="justify-content:flex-start;margin-top:10px"><button class="btn" id="sig">${ronda.n<9?"Siguiente":"Ver resultado"}</button></div>`;
+    ronda.n++;document.getElementById("sig").onclick=siguiente;document.getElementById("sig").focus()})}
+
+/* ================= IA ================= */
+async function prepararIA(){const env=document.getElementById("enviar"),ta=document.getElementById("preg"),r=document.getElementById("resp");
+  document.getElementById("sug").onclick=e=>{const b=e.target.closest("button");if(b){ta.value=b.textContent;env.click()}};
+  let sample=null;try{sample=window.claude?await window.claude.use("sample"):null}catch(e){}
+  if(!sample){env.textContent="Preguntale a Gemini";
+    r.innerHTML="Escribí tu pregunta y tocá el botón: se copia lista y se abre Gemini. Pegala ahí (mantené apretado → <b>Pegar</b>).";
+    env.onclick=async()=>{const q=ta.value.trim();if(!q){ta.focus();return}
+      const txt=`Sos mi tutora de química y de inglés técnico (3er año de secundaria, Argentina). Explicame simple, en 6 renglones como máximo, una idea por renglón, con un ejemplo con fórmula y cada término técnico con su traducción al inglés entre paréntesis. Si es un ejercicio, no me des la respuesta: guiame con el primer paso. Pregunta: ${q}`;
+      let ok=false;try{await navigator.clipboard.writeText(txt);ok=true}catch(e){}
+      window.open("https://gemini.google.com/app","_blank","noopener");
+      r.innerHTML=ok?"✅ Pregunta copiada. En Gemini: mantené apretado → <b>Pegar</b> → enviar.":"No pude copiarla sola: seleccioná tu pregunta, copiala y pegala en Gemini.";
+      sumar(3,"+3 XP por preguntar")};return}
+  env.onclick=async()=>{const q=ta.value.trim();if(!q)return;env.disabled=true;r.textContent="Pensando…";
+    const inst=`Sos una tutora de química y de inglés técnico de química para una estudiante de 3er año de secundaria en Argentina. Le cuesta mantener la atención, así que:
+- Respondé en español rioplatense, cálido y directo, en 6 renglones como máximo.
+- Una idea por renglón. Siempre un ejemplo concreto con fórmula.
+- Cada término técnico, con su traducción al inglés entre paréntesis y en **negrita** (ej: **óxido férrico (ferric oxide)**).
+- Si te pide resolver un ejercicio, no le des la respuesta: guiala con el primer paso y terminá con una pregunta corta para que lo complete ella.
+- Si te pide que le tomes preguntas, hacé UNA por vez y esperá.
+- Temas: número de oxidación; compuestos binarios (óxidos, hidruros metálicos, hidrácidos, sales binarias) y ternarios (hidróxidos, oxoácidos, oxosales, hidrogenosales, sales de amonio); nomenclatura Stock, tradicional y por atomicidad; y sus nombres en inglés. No incluye compuestos cuaternarios.
+- Si no estás segura de algo, decilo. Sin tablas.
+Pregunta: ${q}`;
+    try{const out=await sample(inst,{modelTier:"quick",cache:false,onText:({text})=>{r.innerHTML=fmt(text)}});r.innerHTML=fmt(out.text);sumar(3,"+3 XP por preguntar")}
+    catch(e){r.textContent=e&&e.code==="rate_limited"?"Muchas preguntas seguidas: esperá un minuto.":e&&e.code==="not_granted"?"Hace falta dar permiso para usar la IA en esta página.":"No pude responder ahora. Probá de nuevo en un rato."}
+    finally{env.disabled=false}}}
+function fmt(t){const e=t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");return e.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}
+
+/* ================= LAB 3D ================= */
+const ATOMOS={H:["#E8E8E8",.32,"hidrógeno","hydrogen"],O:["#E5322D",.5,"oxígeno","oxygen"],C:["#3A3A3A",.5,"carbono","carbon"],N:["#3050F8",.5,"nitrógeno","nitrogen"],
+  S:["#E6C619",.6,"azufre","sulfur"],Cl:["#2FB84A",.62,"cloro","chlorine"],Na:["#9B5DE5",.55,"sodio","sodium"],P:["#FF8C1A",.6,"fósforo","phosphorus"],Ca:["#3DB8C8",.65,"calcio","calcium"]};
+const t3=1/Math.sqrt(3);
+function tetra(c,r){return [[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]].map(v=>[c[0]+v[0]*t3*r,c[1]+v[1]*t3*r,c[2]+v[2]*t3*r])}
+const MOLS=(()=>{const L=[];
+  L.push({f:"O₂",tipo:"simple",es:"oxígeno",en:"oxygen",a:[["O",-.6,0,0],["O",.6,0,0]],b:[[0,1]],ox:"O 0",dato:"Sustancia simple: un solo elemento. Por eso su número de oxidación es 0."});
+  const P4=tetra([0,0,0],1.1);L.push({f:"P₄",tipo:"simple",es:"fósforo blanco",en:"white phosphorus",a:P4.map(p=>["P",...p]),b:[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]],ox:"P 0",dato:"Cuatro átomos de fósforo en forma de pirámide. También es una sustancia simple."});
+  L.push({f:"H₂O",tipo:"comun",es:"agua",en:"water",a:[["O",0,0,0],["H",.76,.59,0],["H",-.76,.59,0]],b:[[0,1],[0,2]],ox:"H +1 · O −2",dato:"Tiene forma de V (ángulo de 104,5°). Nombre común: no sigue reglas."});
+  L.push({f:"NH₃",tipo:"comun",es:"amoníaco",en:"ammonia",a:[["N",0,.3,0],["H",.94,-.08,0],["H",-.47,-.08,.81],["H",-.47,-.08,-.81]],b:[[0,1],[0,2],[0,3]],ox:"N −3 · H +1",dato:"Forma de pirámide. Está en muchos productos de limpieza."});
+  L.push({f:"CH₄",tipo:"comun",es:"metano",en:"methane",a:[["C",0,0,0],...tetra([0,0,0],1.09).map(p=>["H",...p])],b:[[0,1],[0,2],[0,3],[0,4]],ox:"C −4 · H +1",dato:"Forma de tetraedro. Es el componente principal del gas natural."});
+  L.push({f:"CO₂",tipo:"oxido",es:"dióxido de carbono · óxido de carbono (IV)",en:"carbon dioxide",a:[["O",-1.16,0,0],["C",0,0,0],["O",1.16,0,0]],b:[[0,1],[1,2]],ox:"C +4 · O −2",dato:"Óxido ácido (no metal + O). Es lineal. Lo exhalamos al respirar."});
+  L.push({f:"HCl",tipo:"hidracido",es:"cloruro de hidrógeno · ácido clorhídrico",en:"hydrogen chloride · hydrochloric acid",a:[["H",-.64,0,0],["Cl",.64,0,0]],b:[[0,1]],ox:"H +1 · Cl −1",dato:"Hidrácido. Disuelto en agua es el ácido clorhídrico, que también está en el jugo del estómago."});
+  L.push({f:"H₂S",tipo:"hidracido",es:"sulfuro de hidrógeno · ácido sulfhídrico",en:"hydrogen sulfide",a:[["S",0,0,0],["H",.96,.93,0],["H",-.96,.93,0]],b:[[0,1],[0,2]],ox:"H +1 · S −2",dato:"Hidrácido. Es el gas con olor a huevo podrido."});
+  const na=[];for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++)na.push([((x+y+z)&1)?"Na":"Cl",x*1.4,y*1.4,z*1.4]);
+  L.push({f:"NaCl",tipo:"salbin",es:"cloruro de sodio",en:"sodium chloride",a:na,b:[],ion:true,ox:"Na +1 · Cl −1",dato:"Sal binaria. No forma moléculas sueltas: es una red de iones Na⁺ y Cl⁻ alternados. Es la sal de mesa."});
+  L.push({f:"NaOH",tipo:"hidroxido",es:"hidróxido de sodio",en:"sodium hydroxide",a:[["Na",-1.9,0,0],["O",0,0,0],["H",.96,0,0]],b:[[1,2]],ion:true,ox:"Na +1 · O −2 · H +1",dato:"Hidróxido: el Na⁺ y el grupo OH⁻ están unidos por atracción de cargas. Es la soda cáustica."});
+  const s=[0,0,0],O4=tetra(s,1.5);const hA=O4[2].map((v,i)=>v+(O4[2][i]-s[i])*.62),hB=O4[3].map((v,i)=>v+(O4[3][i]-s[i])*.62);
+  L.push({f:"H₂SO₄",tipo:"oxoacido",es:"ácido sulfúrico",en:"sulfuric acid",a:[["S",...s],...O4.map(p=>["O",...p]),["H",...hA],["H",...hB]],b:[[0,1],[0,2],[0,3],[0,4],[3,5],[4,6]],ox:"H +1 · S +6 · O −2",dato:"Oxoácido. Se usa en las baterías de los autos."});
+  const ang=[90,210,330].map(a=>a*Math.PI/180),On=ang.map(a=>[1.22*Math.cos(a),1.22*Math.sin(a),0]);
+  L.push({f:"HNO₃",tipo:"oxoacido",es:"ácido nítrico",en:"nitric acid",a:[["N",0,0,0],...On.map(p=>["O",...p]),["H",On[2][0]+.6,On[2][1]-.75,0]],b:[[0,1],[0,2],[0,3],[3,4]],ox:"H +1 · N +5 · O −2",dato:"Oxoácido: plano, con el N en el centro."});
+  const Oc=ang.map(a=>[1.29*Math.cos(a),1.29*Math.sin(a),0]);
+  L.push({f:"CaCO₃",tipo:"oxosal",es:"carbonato de calcio",en:"calcium carbonate",a:[["C",0,0,0],...Oc.map(p=>["O",...p]),["Ca",0,0,-2.4]],b:[[0,1],[0,2],[0,3]],ion:true,ox:"Ca +2 · C +4 · O −2",dato:"Oxosal: Ca²⁺ con el anión carbonato CO₃²⁻ (triángulo plano). Forma el mármol y la cáscara de huevo."});
+  return L})();
+let lab=null;
+function iniciarLab(){const cv=document.getElementById("lienzo");const pintarInfo=i=>{const m=MOLS[i];
+    document.getElementById("molinfo").innerHTML=`${chip(m.tipo)}<div class="formula-grande" style="font-size:2.6rem">${m.f}</div><p><b>${m.es}</b></p><p class="en">${m.en}</p>${voz(m.en.split(" · ")[0])}<p class="dato">Números de oxidación: ${m.ox}</p><p>${m.dato}</p>`;
+    const el=[...new Set(m.a.map(a=>a[0]))];document.getElementById("leyenda").innerHTML=el.map(s=>`<span><i style="background:${ATOMOS[s][0]}"></i>${s} · ${ATOMOS[s][2]} · <em>${ATOMOS[s][3]}</em></span>`).join("")};
+  document.getElementById("mols").onclick=e=>{const b=e.target.closest("button");if(!b)return;document.querySelectorAll("#mols button").forEach(x=>x.setAttribute("aria-pressed",x===b));pintarInfo(+b.dataset.i);if(lab)lab.cargar(+b.dataset.i);
+    const k="mol"+b.dataset.i;if(!est.hechos[k]){est.hechos[k]=1;sumar(2,"+2 XP · molécula nueva")}};
+  pintarInfo(0);
+  if(!window.THREE||!THREE.OrbitControls){cv.replaceWith(Object.assign(document.createElement("p"),{className:"card",textContent:"No se pudo cargar la vista 3D en este navegador."}));return}
+  const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));
+  const esc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(40,1,.1,100);cam.position.set(0,1.5,6.5);
+  esc.add(new THREE.HemisphereLight(0xffffff,0x667788,.8));const d=new THREE.DirectionalLight(0xffffff,.7);d.position.set(3,5,4);esc.add(d);
+  const ctl=new THREE.OrbitControls(cam,cv);ctl.enableDamping=true;ctl.autoRotate=!matchMedia("(prefers-reduced-motion: reduce)").matches;ctl.autoRotateSpeed=1.6;
+  let grupo=null;const tam=()=>{const w=cv.clientWidth,h=cv.clientHeight;ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()};
+  const cargar=i=>{if(grupo)esc.remove(grupo);grupo=new THREE.Group();const m=MOLS[i];
+    m.a.forEach(([s,x,y,z])=>{const [c,r]=ATOMOS[s];const e=new THREE.Mesh(new THREE.SphereGeometry(m.ion?r*1.15:r,32,24),new THREE.MeshStandardMaterial({color:c,roughness:.35,metalness:.05}));e.position.set(x,y,z);grupo.add(e)});
+    m.b.forEach(([i1,i2])=>{const a=new THREE.Vector3(...m.a[i1].slice(1)),b=new THREE.Vector3(...m.a[i2].slice(1));const dir=b.clone().sub(a);
+      const cil=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,dir.length(),16),new THREE.MeshStandardMaterial({color:0x9aa3b2,roughness:.5}));
+      cil.position.copy(a.clone().add(b).multiplyScalar(.5));cil.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());grupo.add(cil)});
+    const box=new THREE.Box3().setFromObject(grupo),cen=box.getCenter(new THREE.Vector3());grupo.position.sub(cen);esc.add(grupo);
+    const r=box.getBoundingSphere(new THREE.Sphere()).radius;cam.position.set(0,r*.6,r*3.2+2);ctl.target.set(0,0,0);ctl.update()};
+  let vivo=true;addEventListener("resize",tam);tam();cargar(0);
+  (function loop(){if(!vivo)return;ctl.update();ren.render(esc,cam);requestAnimationFrame(loop)})();
+  lab={cargar,parar:()=>{vivo=false;ren.dispose()}}}
+function pararLab(){if(lab){lab.parar();lab=null}}
+
+/* ================= ARRANQUE ================= */
+pintarNivel();
+let inicial="ruta";try{inicial=localStorage.getItem("chemlab-tab")||"ruta"}catch(e){}
+const hash=location.hash.slice(1);if(TABS.some(t=>t[0]===hash))inicial=hash;
+window.addEventListener("load",()=>{});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>ir(inicial)</script>
